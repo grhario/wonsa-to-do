@@ -14,6 +14,7 @@ app = FastAPI(title="Eiger Task Manager API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -32,6 +33,7 @@ class Task(BaseModel):
     description: Optional[str] = None
     due_date: Optional[date] = None
     link: Optional[str] = None
+    attachment: Optional[dict] = None
 
 # GET semua task
 @app.get("/tasks")
