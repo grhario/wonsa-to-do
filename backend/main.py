@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from supabase import create_client
 import os
 from dotenv import load_dotenv
-from datetime import date
+from datetime import date, datetime, timedelta
 from typing import Optional
 
 load_dotenv()
@@ -55,7 +55,6 @@ def create_task(task: TaskCreate):
         service = get_calendar_service()
         if service:
             calendar_id = os.getenv("GOOGLE_CALENDAR_ID", "primary")
-            from datetime import datetime
             now = datetime.utcnow()
             event = {
                 "summary": f"⏰ REMINDER: {new_task['title']}",
@@ -101,7 +100,6 @@ def get_wa_reminder():
 import json
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from datetime import datetime, timedelta
 
 def get_calendar_service():
     creds_json = os.getenv("GOOGLE_CREDENTIALS")
