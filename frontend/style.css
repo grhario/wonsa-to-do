@@ -15,8 +15,10 @@
   --primary-light: #d1fae5;
   --secondary: #64748b;
   --danger: #ef4444;
+  --danger-light: rgba(239, 68, 68, 0.1);
   --warning: #f59e0b;
   --info: #3b82f6;
+  --info-light: rgba(59, 130, 246, 0.1);
   --success: #22c55e;
   
   --bg: #f8fafc;
@@ -1096,6 +1098,53 @@ body {
   color: var(--info);
 }
 
+/* Task Link */
+.task-link-row {
+  margin-top: 10px;
+  padding-left: 40px;
+}
+
+.task-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1d4ed8;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all var(--transition);
+}
+
+.task-link-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.task-attachment-row {
+  margin-top: 10px;
+  padding-left: 40px;
+}
+
+.task-attachment-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+  color: #7c3aed;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.btn-link:hover {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1d4ed8;
+}
+
 /* Task Date */
 .task-date {
   display: flex;
@@ -1132,11 +1181,11 @@ body {
 .closing-header {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 28px;
-  margin-bottom: 32px;
+  gap: 32px;
+  margin-bottom: 36px;
   align-items: center;
-  padding: 28px;
-  background: var(--surface);
+  padding: 32px;
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface-hover) 100%);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
@@ -1149,17 +1198,24 @@ body {
 }
 
 .form-group {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .form-group label {
   display: block;
   font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+  letter-spacing: 0.3px;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
 }
 
 .form-control {
@@ -1191,20 +1247,21 @@ body {
 .clock-display {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 28px;
+  gap: 12px;
+  font-size: 32px;
   font-weight: 700;
   color: var(--primary);
   font-family: 'Inter', monospace;
   background: linear-gradient(135deg, var(--primary-light) 0%, var(--surface) 100%);
-  padding: 16px 24px;
+  padding: 20px 28px;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: 2px solid var(--primary-light);
   box-shadow: var(--shadow-sm);
+  white-space: nowrap;
 }
 
 .clock-display i {
-  font-size: 24px;
+  font-size: 28px;
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -1834,19 +1891,21 @@ body {
   position: fixed;
   bottom: 28px;
   right: 28px;
-  background: var(--text);
-  color: white;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: #ffffff;
   padding: 16px 24px;
   border-radius: var(--radius);
   display: flex;
   align-items: center;
   gap: 12px;
   font-weight: 500;
-  box-shadow: var(--shadow-xl);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
   z-index: 3000;
   transform: translateX(120%);
   opacity: 0;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .toast.show {
@@ -1855,11 +1914,18 @@ body {
 }
 
 .toast.error {
-  background: var(--danger);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .toast.success {
-  background: var(--success);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.toast.info {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .toast i {
@@ -1933,6 +1999,10 @@ body {
   
   .header h1 {
     font-size: 20px;
+  }
+  
+  .task-actions {
+    opacity: 1;
   }
   
   .header-actions .btn span {

@@ -158,8 +158,8 @@
             <section id="screen-closing" class="screen">
                 <div class="closing-header">
                     <div class="form-group">
-                        <label>Nama Petugas</label>
-                        <input type="text" id="officerName" placeholder="Masukkan nama petugas" class="form-control">
+                        <label>Nama Retail Assistant</label>
+                        <input type="text" id="officerName" placeholder="Masukkan nama Retail Assistant" class="form-control">
                     </div>
                     <div class="clock-display">
                         <i class="ti ti-clock"></i>
@@ -348,9 +348,9 @@
                     <h3><i class="ti ti-settings"></i> Pengaturan Aplikasi</h3>
                     
                     <div class="form-group">
-                        <label>Nomor WhatsApp Manager</label>
+                        <label>Nomor WhatsApp Grup/Manager</label>
                         <input type="text" id="waNumber" class="form-control" placeholder="Contoh: 6281234567890">
-                        <small>Format: 62xxxxxxxxxx (tanpa +)</small>
+                        <small>Nomor tujuan laporan closing. Format: 62xxxxxxxxxx (tanpa +). Bisa nomor grup atau pribadi.</small>
                     </div>
                     
                     <div class="form-group">
@@ -359,8 +359,8 @@
                     </div>
                     
                     <div class="form-group">
-                        <label>Nama Default Petugas</label>
-                        <input type="text" id="defaultName" class="form-control" placeholder="Nama petugas default">
+                        <label>Nama Default Retail Assistant</label>
+                        <input type="text" id="defaultName" class="form-control" placeholder="Nama Retail Assistant default">
                     </div>
                     
                     <div class="form-group">
@@ -505,6 +505,7 @@
         let currentScreen = 'dashboard';
         let selectedFile = null;
         let selectedFileBase64 = null;
+        let editingTaskId = null;
         
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -594,6 +595,10 @@
         
         // Add Task
         async function addTask() {
+            if (editingTaskId) {
+                return saveTaskUpdate(editingTaskId);
+            }
+            
             const title = document.getElementById('taskTitle').value.trim();
             const category = document.getElementById('taskCategory').value;
             const role = document.getElementById('taskRole').value;
@@ -756,43 +761,102 @@
             document.getElementById('taskRole').value = task.role;
             document.getElementById('taskPriority').value = task.priority;
             document.getElementById('taskType').value = task.task_type;
-            document.getElementById('taskDesc').value = task.description || '';
+            document.getElementById('taskDescription').value = task.description || '';
             document.getElementById('taskDueDate').value = task.due_date || '';
-            document.getElementById('taskLink').value = task.link || '';
             
-            // Show modal
+            // Handle attachment
+            if (task.link) {
+                document.querySelector('input[name="attachmentType"][value="link"]').checked = true;
+                document.getElementById('taskLink').value = task.link;
+            } else if (task.attachment) {
+                document.querySelector('input[name="attachmentType"][value="file"]').checked = true;
+                selectedFileBase64 = task.attachment;
+                document.getElementById('filePreview').innerHTML = `
+                    <div class="file-info">
+                        <i class="ti ti-file"></i>
+                        <span>File terlampir</span>
+                    </div>
+                `;
+            } else {
+                document.querySelector('input[name="attachmentType"][value="none"]').checked = true;
+            }
+            toggleAttachmentType();
+            
+            editingTaskId = id;
+            document.querySelector('.modal-header h2').textContent = 'Edit Task';
             openModal();
-            showToast('Mode edit task (fitur update menyusul)', 'info');
         }
         
-        // Update Task Status
-        async function updateTaskStatus(id, isDone) {
+        // Save Task Update
+        async function saveTaskUpdate(id) {
+            const title = document.getElementById('taskTitle').value.trim();
+            const category = document.getElementById('taskCategory').value;
+            const role = document.getElementById('taskRole').value;
+            const priority = document.getElementById('taskPriority').value;
+            const taskType = document.getElementById('taskType').value;
+            const description = document.getElementById('taskDescription').value.trim();
+            const dueDate = document.getElementById('taskDueDate').value;
+            
+            if (!title) {
+                showToast('Judul task wajib diisi', 'error');
+                return;
+            }
+            
+            const taskData = {
+                title: title,
+                category: category,
+                role: role,
+                priority: priority,
+                task_type: taskType,
+                description: description || null,
+                due_date: dueDate || null,
+                link: null,
+                attachment: null
+            };
+            
+            const attachmentType = document.querySelector('input[name="attachmentType"]:checked').value;
+            if (attachmentType === 'link') {
+                taskData.link = document.getElementById('taskLink').value.trim() || null;
+            } else if (attachmentType === 'file' && selectedFileBase64) {
+                taskData.attachment = selectedFileBase64;
+            }
+            
             try {
+                showToast('Mengupdate task...', 'info');
                 const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ is_done: isDone })
+                    body: JSON.stringify(taskData)
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Failed to update task');
+                    let errorMsg = 'Failed to update task';
+                    try {
+                        const errData = await response.json();
+                        errorMsg = errData.detail || errorMsg;
+                    } catch (e) {
+                        // ignore
+                    }
+                    throw new Error(errorMsg);
                 }
                 
                 const updatedTask = await response.json();
                 
-                // Update local state
                 const index = tasks.findIndex(t => t.id === id);
                 if (index !== -1) {
                     tasks[index] = updatedTask;
                 }
                 
+                closeModal();
+                resetTaskForm();
                 renderAll();
                 updateStats();
+                showToast('Task berhasil diupdate', 'success');
             } catch (error) {
                 console.error('Error updating task:', error);
-                showToast('Gagal mengupdate task', 'error');
+                showToast('Gagal mengupdate task: ' + error.message, 'error');
             }
         }
         
@@ -808,7 +872,14 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Failed to delete task');
+                    let errorMsg = 'Failed to delete task';
+                    try {
+                        const errData = await response.json();
+                        errorMsg = errData.detail || errorMsg;
+                    } catch (e) {
+                        // ignore parse error
+                    }
+                    throw new Error(errorMsg);
                 }
                 
                 tasks = tasks.filter(t => t.id !== id);
@@ -817,7 +888,7 @@
                 showToast('Task berhasil dihapus', 'success');
             } catch (error) {
                 console.error('Error deleting task:', error);
-                showToast('Gagal menghapus task', 'error');
+                showToast('Gagal menghapus task: ' + error.message, 'error');
             }
         }
         
@@ -993,8 +1064,11 @@
                             </div>
                         </div>
                         ${task.due_date ? renderDateHTML(task.due_date) : ''}
+                        ${task.link ? `<div class="task-link-row"><a href="${escapeHtml(task.link)}" target="_blank" class="task-link-btn"><i class="ti ti-external-link"></i> Buka Link</a></div>` : ''}
+                        ${task.attachment ? `<div class="task-attachment-row"><span class="task-attachment-label"><i class="ti ti-paperclip"></i> File terlampir</span></div>` : ''}
                     </div>
                     <div class="task-actions">
+                        ${task.link ? `<a href="${escapeHtml(task.link)}" target="_blank" class="btn-icon btn-link" title="Buka Link"><i class="ti ti-external-link"></i></a>` : ''}
                         <button class="btn-icon btn-edit" onclick="editTask(${task.id})" title="Edit">
                             <i class="ti ti-edit"></i>
                         </button>
@@ -1050,6 +1124,8 @@
             selectedFileBase64 = null;
             document.getElementById('filePreview').innerHTML = '';
             toggleAttachmentType();
+            editingTaskId = null;
+            document.querySelector('.modal-header h2').textContent = 'Tambah Task Baru';
         }
         
         // Attachment Toggle
@@ -1190,7 +1266,7 @@ Sent from Eiger Wonosari Task Manager`
         function generateWAReport() {
             const officerName = document.getElementById('officerName').value.trim();
             if (!officerName) {
-                showToast('Mohon isi nama petugas terlebih dahulu', 'error');
+                showToast('Mohon isi nama Retail Assistant terlebih dahulu', 'error');
                 document.getElementById('officerName').focus();
                 return;
             }
@@ -1209,7 +1285,7 @@ Sent from Eiger Wonosari Task Manager`
             
             let report = `*[CLOSING HARIAN EIGER WONOSARI]*\n\n`;
             report += `Tanggal: ${dateStr}\n`;
-            report += `Petugas: ${officerName}\n`;
+            report += `Retail Assistant: ${officerName}\n`;
             report += `Waktu: ${now.toLocaleTimeString('id-ID', { hour12: false })}\n\n`;
             
             report += `*TASK SELESAI (${doneTasks.length}/${harianTasks.length}):*\n`;
