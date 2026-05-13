@@ -13,7 +13,7 @@
 <aside id="sidebar">
   <div class="sidebar-header">
     <div class="brand">
-      <span class="brand-icon">🏔️</span>
+      <img src="logo.png" alt="Eiger Logo" class="brand-icon"/>
       <div class="brand-text">
         <div class="brand-name">Eiger Wonosari</div>
         <div class="brand-tagline">Store Management</div>
@@ -72,6 +72,14 @@
       </button>
     </div>
   </nav>
+
+  <!-- Dark Mode Toggle -->
+  <div class="sidebar-footer">
+    <button class="dark-mode-toggle" onclick="toggleDarkMode()" id="dark-mode-btn">
+      <i class="ti ti-sun" id="theme-icon"></i>
+      <span id="theme-text">Mode Terang</span>
+    </button>
+  </div>
 </aside>
 
 <!-- MAIN CONTENT -->
@@ -468,6 +476,20 @@
         </div>
       </div>
       
+      <!-- Date Section -->
+      <div class="datetime-section">
+        <label class="datetime-label">
+          <i class="ti ti-calendar-event"></i> Tanggal & Hari
+        </label>
+        <div class="date-input-wrapper">
+          <div class="input-with-icon">
+            <i class="ti ti-calendar"></i>
+            <input type="date" class="form-control" id="modal-date"/>
+          </div>
+          <div class="selected-day" id="selected-day">Pilih tanggal</div>
+        </div>
+      </div>
+      
       <!-- Attachment Section -->
       <div class="attachment-section">
         <label class="attachment-label">
@@ -603,6 +625,7 @@ async function loadTasks() {
       done: t.is_done || false,
       priority: t.priority || 'sedang',
       role: t.role || 'semua',
+      date: t.date || null,
       attachment: t.attachment || null
     }));
     renderAll();
@@ -614,12 +637,14 @@ async function loadTasks() {
 }
 
 function getDefaultTasks() {
+  const today = new Date().toISOString().split('T')[0];
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
   return [
-    { id: '1', text: 'Cek kebersihan toko', type: 'wajib', category: 'daily', done: false, priority: 'tinggi', role: 'semua', attachment: null },
-    { id: '2', text: 'Display produk utama', type: 'wajib', category: 'daily', done: false, priority: 'sedang', role: 'semua', attachment: null },
-    { id: '3', text: 'Update stok habis', type: 'insidental', category: 'daily', done: false, priority: 'sedang', role: 'semua', attachment: { type: 'link', url: 'https://docs.google.com/forms/d/example', name: 'google.com' } },
-    { id: '4', text: 'Cleaning rak mingguan', type: 'wajib', category: 'weekly', done: false, priority: 'rendah', role: 'ra', attachment: null },
-    { id: '5', text: 'Review performa tim', type: 'wajib', category: 'weekly', done: false, priority: 'tinggi', role: 'spv', attachment: null }
+    { id: '1', text: 'Cek kebersihan toko', type: 'wajib', category: 'daily', done: false, priority: 'tinggi', role: 'semua', date: today, attachment: null },
+    { id: '2', text: 'Display produk utama', type: 'wajib', category: 'daily', done: false, priority: 'sedang', role: 'semua', date: today, attachment: null },
+    { id: '3', text: 'Update stok habis', type: 'insidental', category: 'daily', done: false, priority: 'sedang', role: 'semua', date: tomorrow, attachment: { type: 'link', url: 'https://docs.google.com/forms/d/example', name: 'google.com' } },
+    { id: '4', text: 'Cleaning rak mingguan', type: 'wajib', category: 'weekly', done: false, priority: 'rendah', role: 'ra', date: null, attachment: null },
+    { id: '5', text: 'Review performa tim', type: 'wajib', category: 'weekly', done: false, priority: 'tinggi', role: 'spv', date: null, attachment: null }
   ];
 }
 
@@ -689,11 +714,32 @@ function renderList(id, list) {
           </span>
           <span class="task-priority ${t.priority}">${t.priority}</span>
         </div>
+        ${t.date ? renderDateHTML(t.date) : ''}
         ${t.attachment ? renderAttachmentHTML(t.attachment) : ''}
       </div>
       <button class="btn-icon btn-delete" onclick="deleteTask('${t.id}')"><i class="ti ti-trash"></i></button>
     </div>
   `).join('');
+}
+
+function renderDateHTML(dateString) {
+  if (!dateString) return '';
+  
+  const dateObj = new Date(dateString);
+  const dayName = dateObj.toLocaleDateString('id-ID', { weekday: 'long' });
+  const formattedDate = dateObj.toLocaleDateString('id-ID', { 
+    day: 'numeric', 
+    month: 'long',
+    year: 'numeric'
+  });
+  
+  return `
+    <div class="task-date">
+      <i class="ti ti-calendar-event"></i>
+      <span class="date-day">${dayName}</span>
+      <span class="date-full">${formattedDate}</span>
+    </div>
+  `;
 }
 
 function renderAttachmentHTML(attachment) {
@@ -777,6 +823,9 @@ async function addTask() {
     return;
   }
   
+  // Get date info
+  const date = document.getElementById('modal-date').value;
+  
   // Get attachment info
   const attachmentType = document.querySelector('.attachment-type-btn.active').dataset.type;
   let attachment = null;
@@ -813,6 +862,7 @@ async function addTask() {
     done: false,
     priority: priority,
     role: category === 'ra' ? 'ra' : category === 'spv' ? 'spv' : 'semua',
+    date: date,
     attachment: attachment
   };
   
@@ -826,6 +876,7 @@ async function addTask() {
         task_type: newTask.type,
         priority: priority,
         role: newTask.role,
+        date: date,
         attachment: attachment
       })
     });
@@ -838,6 +889,34 @@ async function addTask() {
   resetAttachmentForm();
   renderAll();
   showToast('Task ditambahkan');
+}
+
+// Update selected day display when date changes
+function updateSelectedDay() {
+  const dateInput = document.getElementById('modal-date');
+  const selectedDayEl = document.getElementById('selected-day');
+  
+  if (dateInput.value) {
+    const dateObj = new Date(dateInput.value);
+    const dayName = dateObj.toLocaleDateString('id-ID', { weekday: 'long' });
+    const formattedDate = dateObj.toLocaleDateString('id-ID', { 
+      day: 'numeric', 
+      month: 'long',
+      year: 'numeric'
+    });
+    selectedDayEl.textContent = `${dayName}, ${formattedDate}`;
+    selectedDayEl.style.display = 'block';
+  } else {
+    selectedDayEl.textContent = 'Pilih tanggal';
+    selectedDayEl.style.display = 'none';
+  }
+}
+
+// Reset date form
+function resetDateTimeForm() {
+  document.getElementById('modal-date').value = '';
+  document.getElementById('selected-day').textContent = 'Pilih tanggal';
+  document.getElementById('selected-day').style.display = 'none';
 }
 
 // Helper function to extract domain name from URL
@@ -911,12 +990,20 @@ function openModal(type) {
   document.getElementById('modal-task').value = '';
   if (type) document.getElementById('modal-category').value = type;
   resetAttachmentForm();
+  resetDateTimeForm();
+  // Set default date to today
+  const dateInput = document.getElementById('modal-date');
+  dateInput.value = new Date().toISOString().split('T')[0];
+  // Add event listener for date change
+  dateInput.onchange = updateSelectedDay;
+  updateSelectedDay();
   document.getElementById('modal-task').focus();
 }
 
 function closeModal() {
   document.getElementById('modal').classList.remove('open');
   resetAttachmentForm();
+  resetDateTimeForm();
 }
 
 // WA Report
@@ -1070,9 +1157,70 @@ function loadSettings() {
   }
 }
 
+// Dark Mode Functions
+function initDarkMode() {
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = savedTheme === 'auto' ? (prefersDark ? 'dark' : 'light') : savedTheme;
+  
+  if (theme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    updateThemeUI(true);
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    updateThemeUI(false);
+  }
+}
+
+function toggleDarkMode() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  
+  if (isDark) {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('theme', 'light');
+    updateThemeUI(false);
+    showToast('Mode terang diaktifkan');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('theme', 'dark');
+    updateThemeUI(true);
+    showToast('Mode gelap diaktifkan 🌙');
+  }
+}
+
+function updateThemeUI(isDark) {
+  const icon = document.getElementById('theme-icon');
+  const text = document.getElementById('theme-text');
+  
+  if (isDark) {
+    icon.classList.remove('ti-sun');
+    icon.classList.add('ti-moon');
+    text.textContent = 'Mode Gelap';
+  } else {
+    icon.classList.remove('ti-moon');
+    icon.classList.add('ti-sun');
+    text.textContent = 'Mode Terang';
+  }
+}
+
+// Listen for system theme changes
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'auto' || !savedTheme) {
+    if (e.matches) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      updateThemeUI(true);
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      updateThemeUI(false);
+    }
+  }
+});
+
 // Init
 loadTasks();
 loadSettings();
+initDarkMode();
 setInterval(updateClock, 1000);
 updateClock();
 
