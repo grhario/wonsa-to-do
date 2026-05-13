@@ -1,30 +1,17 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from supabase import create_client
 import os
 from dotenv import load_dotenv
 from datetime import date, datetime, timedelta
-from typing import Optional
+from typing import Optional, List
+import json
+import threading
+import time
 
 load_dotenv()
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi import Request
-from fastapi.responses import JSONResponse
 
-@app.middleware("http")
-async def add_cors_headers(request: Request, call_next):
-    if request.method == "OPTIONS":
-        response = JSONResponse(content={}, status_code=200)
-        response.headers["Access-Control-Allow-Origin"] = "*"
-        response.headers["Access-Control-Allow-Methods"] = "*"
-        response.headers["Access-Control-Allow-Headers"] = "*"
-        return response
-    response = await call_next(request)
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    return response
 app = FastAPI(title="Eiger Task Manager API")
 
 app.add_middleware(
@@ -32,7 +19,7 @@ app.add_middleware(
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-   allow_headers=["*"],
+    allow_headers=["*"],
 )
 
 supabase = create_client(
@@ -42,16 +29,24 @@ supabase = create_client(
 
 class Task(BaseModel):
     title: str
-    category: str        # Harian / Mingguan / Bulanan
-    role: str            # SPV / Retail Assistant / Semua
-    priority: str        # Tinggi / Sedang / Rendah
-    task_type: str = 'wajib'   # wajib / insidental
+    category: str
+    role: str
+    priority: str
+    task_type: str = 'wajib'
     description: Optional[str] = None
     due_date: Optional[date] = None
     link: Optional[str] = None
     attachment: Optional[dict] = None
 
-# GET semua task
+class ClosingLog(BaseModel):
+    officer_name: str
+    log_date: Optional[date] = None
+    notes: Optional[str] = None
+
+@app.get("/")
+def root():
+    return {"status": "ok", "app": "Eiger Task Manager"}
+
 @app.get("/tasks")
 def get_tasks(category: Optional[str] = None, role: Optional[str] = None):
     query = supabase.table("tasks").select("*").order("created_at", desc=False)
@@ -62,122 +57,126 @@ def get_tasks(category: Optional[str] = None, role: Optional[str] = None):
     result = query.execute()
     return result.data
 
-# POST buat task baru
 @app.post("/tasks")
 def create_task(task: Task):
-    result = supabase.table("tasks").insert(task.dict()).execute()
+    data = task.dict()
+    data.pop("attachment", None)
+    result = supabase.table("tasks").insert(data).execute()
     new_task = result.data[0]
-    
-    # Auto sync ke Google Calendar
     try:
         service = get_calendar_service()
         if service:
             calendar_id = os.getenv("GOOGLE_CALENDAR_ID", "primary")
             now = datetime.utcnow()
+            event_date = str(new_task.get("due_date") or now.strftime("%Y-%m-%d"))
             event = {
                 "summary": f"⏰ REMINDER: {new_task['title']}",
                 "description": f"Task baru!\nKategori: {new_task['category']}\nPrioritas: {new_task['priority']}",
-                "start": {"dateTime": (new_task['due_date'] or now.strftime("%Y-%m-%d")) + "T08:00:00+07:00", "timeZone": "Asia/Jakarta"},
-"end": {"dateTime": (new_task['due_date'] or now.strftime("%Y-%m-%d")) + "T08:30:00+07:00", "timeZone": "Asia/Jakarta"},
-                "reminders": {
-                    "useDefault": False,
-                    "overrides": [
-                        {"method": "popup", "minutes": 0},
-                        {"method": "popup", "minutes": 30}
-                    ]
-                }
+                "start": {"dateTime": event_date + "T08:00:00+07:00", "timeZone": "Asia/Jakarta"},
+                "end": {"dateTime": event_date + "T08:30:00+07:00", "timeZone": "Asia/Jakarta"},
+                "reminders": {"useDefault": False, "overrides": [{"method": "popup", "minutes": 0}, {"method": "popup", "minutes": 30}]}
             }
             service.events().insert(calendarId=calendar_id, body=event).execute()
     except:
-        pass  # Jangan gagalkan task creation kalau Calendar error
-    
+        pass
     return new_task
 
-# PATCH update status done
-@app.patch("/tasks/{task_id}/done")
-def toggle_done(task_id: str, is_done: bool):
-    result = supabase.table("tasks").update({"is_done": is_done}).eq("id", task_id).execute()
+@app.patch("/tasks/{task_id}")
+def update_task(task_id: str, is_done: Optional[bool] = None):
+    data = {}
+    if is_done is not None:
+        data["is_done"] = is_done
+    result = supabase.table("tasks").update(data).eq("id", task_id).execute()
     return result.data[0]
 
-# DELETE hapus task
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: str):
     supabase.table("tasks").delete().eq("id", task_id).execute()
-    return {"message": "Task dihapus"}
+    return {"message": "Task berhasil dihapus"}
 
-# GET reminder WA — task prioritas tinggi yang belum selesai
-@app.get("/reminder/whatsapp")
-def get_wa_reminder():
-    tasks = supabase.table("tasks").select("*").eq("is_done", False).eq("priority", "Tinggi").execute()
-    task_list = "\n".join([f"• {t['title']}" for t in tasks.data])
-    message = f"🔔 Reminder Task Prioritas Tinggi\nEiger Wonosari\n\n{task_list}"
-    wa_url = f"https://wa.me/?text={message}"
-    return {"url": wa_url, "count": len(tasks.data)}
+@app.post("/tasks/{task_id}/toggle")
+def toggle_task(task_id: str):
+    current = supabase.table("tasks").select("is_done").eq("id", task_id).execute()
+    if not current.data:
+        raise HTTPException(status_code=404, detail="Task tidak ditemukan")
+    new_status = not current.data[0]["is_done"]
+    result = supabase.table("tasks").update({"is_done": new_status}).eq("id", task_id).execute()
+    return result.data[0]
 
-# ─── GOOGLE CALENDAR INTEGRATION ─────────────────────────
-import json
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
+@app.get("/closing/today")
+def get_today_tasks():
+    wajib = supabase.table("tasks").select("*").eq("task_type", "wajib").execute()
+    insidental = supabase.table("tasks").select("*").eq("task_type", "insidental").execute()
+    return {"wajib": wajib.data, "insidental": insidental.data}
+
+@app.post("/closing/submit")
+def submit_closing(log: ClosingLog):
+    pending = supabase.table("tasks").select("*").eq("is_done", False).execute()
+    done = supabase.table("tasks").select("*").eq("is_done", True).execute()
+    total = len(pending.data) + len(done.data)
+    msg = f"📋 *LAPORAN CLOSING HARIAN*\n👤 Petugas: {log.officer_name}\n✅ Selesai: {len(done.data)}/{total} task"
+    if log.notes:
+        msg += f"\n📝 Catatan: {log.notes}"
+    log_data = {
+        "officer_name": log.officer_name,
+        "log_date": str(log.log_date or date.today()),
+        "total_tasks": total,
+        "done_tasks": len(done.data),
+        "notes": log.notes
+    }
+    supabase.table("closing_logs").insert(log_data).execute()
+    return {"success": True, "wa_message": msg}
+
+@app.get("/settings")
+def get_settings():
+    result = supabase.table("settings").select("*").execute()
+    return {row["key"]: row["value"] for row in result.data}
 
 def get_calendar_service():
-    creds_json = os.getenv("GOOGLE_CREDENTIALS")
-    if not creds_json:
+    try:
+        from google.oauth2 import service_account
+        from googleapiclient.discovery import build
+        creds_json = os.getenv("GOOGLE_CREDENTIALS")
+        if not creds_json:
+            return None
+        creds_dict = json.loads(creds_json)
+        creds = service_account.Credentials.from_service_account_info(
+            creds_dict, scopes=["https://www.googleapis.com/auth/calendar"]
+        )
+        return build("calendar", "v3", credentials=creds)
+    except:
         return None
-    creds_dict = json.loads(creds_json)
-    creds = service_account.Credentials.from_service_account_info(
-        creds_dict,
-        scopes=["https://www.googleapis.com/auth/calendar"]
-    )
-    return build("calendar", "v3", credentials=creds)
-
-@app.post("/calendar/sync")
-def sync_tasks_to_calendar():
-    service = get_calendar_service()
-    if not service:
-        raise HTTPException(status_code=500, detail="Google Calendar tidak terkonfigurasi")
-    
-    calendar_id = os.getenv("GOOGLE_CALENDAR_ID", "primary")
-    tasks = supabase.table("tasks").select("*").eq("is_done", False).execute()
-    
-    created = []
-    for task in tasks.data:
-        now = datetime.utcnow()
-        event = {
-            "summary": f"⏰ REMINDER: {task['title']}",
-            "description": f"Task belum selesai!\nKategori: {task['category']}\nPrioritas: {task['priority']}",
-            "start": {"dateTime": now.strftime("%Y-%m-%dT08:00:00+07:00"), "timeZone": "Asia/Jakarta"},
-            "end": {"dateTime": now.strftime("%Y-%m-%dT08:30:00+07:00"), "timeZone": "Asia/Jakarta"},
-            "reminders": {
-                "useDefault": False,
-                "overrides": [
-                    {"method": "popup", "minutes": 0},
-                    {"method": "popup", "minutes": 30}
-                ]
-            }
-        }
-        result = service.events().insert(calendarId=calendar_id, body=event).execute()
-        created.append(result.get("id"))
-    
-    return {"success": True, "events_created": len(created)}
 
 @app.get("/calendar/remind-pending")
 def remind_pending_tasks():
-    return sync_tasks_to_calendar()
-
-# ─── CRON JOB HARIAN ─────────────────────────────────────
-import threading
-import time
+    service = get_calendar_service()
+    if not service:
+        raise HTTPException(status_code=500, detail="Google Calendar tidak terkonfigurasi")
+    calendar_id = os.getenv("GOOGLE_CALENDAR_ID", "primary")
+    tasks = supabase.table("tasks").select("*").eq("is_done", False).execute()
+    created = []
+    for task in tasks.data:
+        now = datetime.utcnow()
+        event_date = str(task.get("due_date") or now.strftime("%Y-%m-%d"))
+        event = {
+            "summary": f"⏰ REMINDER: {task['title']}",
+            "description": f"Task belum selesai!\nKategori: {task['category']}\nPrioritas: {task['priority']}",
+            "start": {"dateTime": event_date + "T08:00:00+07:00", "timeZone": "Asia/Jakarta"},
+            "end": {"dateTime": event_date + "T08:30:00+07:00", "timeZone": "Asia/Jakarta"},
+            "reminders": {"useDefault": False, "overrides": [{"method": "popup", "minutes": 0}, {"method": "popup", "minutes": 30}]}
+        }
+        result = service.events().insert(calendarId=calendar_id, body=event).execute()
+        created.append(result.get("id"))
+    return {"success": True, "events_created": len(created)}
 
 def daily_calendar_sync():
     while True:
         now = datetime.utcnow()
-        # Sync tiap hari jam 01:00 UTC = 08:00 WIB
         if now.hour == 1 and now.minute == 0:
             try:
                 remind_pending_tasks()
             except:
                 pass
-        time.sleep(60)  # cek tiap menit
+        time.sleep(60)
 
-# Jalankan cron job di background
 threading.Thread(target=daily_calendar_sync, daemon=True).start()
