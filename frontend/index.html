@@ -1,461 +1,1273 @@
-<script>
-const API = 'https://wonsa-to-do-production.up.railway.app';
-let tasks = [];
-let currentScreen = 'closing';
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eiger Wonosari Task Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="ti ti-mountain"></i>
+                    <span>Eiger Wonosari</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="#" class="nav-link active" onclick="go('dashboard')">
+                            <i class="ti ti-layout-dashboard"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link" onclick="go('closing')">
+                            <i class="ti ti-checkbox"></i>
+                            <span>Closing Harian</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link" onclick="go('harian')">
+                            <i class="ti ti-calendar-day"></i>
+                            <span>To-Do Harian</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link" onclick="go('mingguan')">
+                            <i class="ti ti-calendar-week"></i>
+                            <span>Mingguan</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link" onclick="go('bulanan')">
+                            <i class="ti ti-calendar-month"></i>
+                            <span>Bulanan</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link" onclick="go('retail')">
+                            <i class="ti ti-users"></i>
+                            <span>Retail Assistant</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link" onclick="go('spv')">
+                            <i class="ti ti-user-shield"></i>
+                            <span>SPV</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link" onclick="go('mom')">
+                            <i class="ti ti-file-text"></i>
+                            <span>Template MOM</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link" onclick="go('settings')">
+                            <i class="ti ti-settings"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <button class="btn-icon" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+                    <i class="ti ti-moon" id="darkModeIcon"></i>
+                </button>
+            </div>
+        </aside>
 
-function getWeekNumber(date) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
-}
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <h1 id="pageTitle">Dashboard</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openModal()">
+                        <i class="ti ti-plus"></i>
+                        Tambah Task
+                    </button>
+                </div>
+            </header>
 
-const titles = {
-  dashboard: 'Dashboard', closing: 'Closing Harian', daily: 'To-Do Harian',
-  weekly: 'Task Mingguan', monthly: 'Task Bulanan', ra: 'Retail Assistant',
-  spv: 'SPV / Storehead', mom: 'Template MOM', settings: 'Pengaturan'
-};
+            <!-- Dashboard Screen -->
+            <section id="screen-dashboard" class="screen active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-blue">
+                            <i class="ti ti-list-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalTasks">0</h3>
+                            <p>Total Tasks</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-green">
+                            <i class="ti ti-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="completedTasks">0</h3>
+                            <p>Selesai</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-yellow">
+                            <i class="ti ti-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="pendingTasks">0</h3>
+                            <p>Belum Selesai</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-red">
+                            <i class="ti ti-alert-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="highPriorityTasks">0</h3>
+                            <p>Prioritas Tinggi</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-sections">
+                    <div class="section-card">
+                        <h3>Task Harian Hari Ini</h3>
+                        <div id="dashboard-harian" class="task-list-mini">
+                            <p class="empty-state">Memuat...</p>
+                        </div>
+                    </div>
+                    <div class="section-card">
+                        <h3>Task Mingguan</h3>
+                        <div id="dashboard-mingguan" class="task-list-mini">
+                            <p class="empty-state">Memuat...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-function go(screen) {
-  currentScreen = screen;
-  document.querySelectorAll('.nav-item').forEach(item => {
-    item.classList.toggle('active', item.dataset.screen === screen);
-  });
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + screen).classList.add('active');
-  document.getElementById('page-title').textContent = titles[screen] || screen;
-  const actions = document.getElementById('header-actions');
-  actions.style.display = ['closing','daily','weekly','monthly','ra','spv'].includes(screen) ? 'flex' : 'none';
-  renderAll();
-}
+            <!-- Closing Harian Screen -->
+            <section id="screen-closing" class="screen">
+                <div class="closing-header">
+                    <div class="form-group">
+                        <label>Nama Petugas</label>
+                        <input type="text" id="officerName" placeholder="Masukkan nama petugas" class="form-control">
+                    </div>
+                    <div class="clock-display">
+                        <i class="ti ti-clock"></i>
+                        <span id="clock">00:00:00</span>
+                    </div>
+                </div>
+                
+                <div class="task-counters">
+                    <div class="counter">
+                        <span class="counter-value" id="closingTotal">0</span>
+                        <span class="counter-label">Total</span>
+                    </div>
+                    <div class="counter">
+                        <span class="counter-value" id="closingDone">0</span>
+                        <span class="counter-label">Selesai</span>
+                    </div>
+                    <div class="counter">
+                        <span class="counter-value" id="closingPending">0</span>
+                        <span class="counter-label">Belum</span>
+                    </div>
+                </div>
+                
+                <div class="task-list" id="closing-list">
+                    <p class="empty-state">Memuat tasks...</p>
+                </div>
+                
+                <div class="closing-actions">
+                    <button class="btn btn-success" onclick="generateWAReport()">
+                        <i class="ti ti-brand-whatsapp"></i>
+                        Generate Laporan WA
+                    </button>
+                </div>
+                
+                <div class="wa-preview" id="waPreview" style="display: none;">
+                    <h4>Preview Laporan:</h4>
+                    <pre id="waText"></pre>
+                    <button class="btn btn-primary" onclick="sendWA()">
+                        <i class="ti ti-send"></i>
+                        Kirim via WhatsApp
+                    </button>
+                </div>
+            </section>
 
-async function loadTasksFromAPI() {
-  try {
-    const res = await fetch(`${API}/tasks`);
-    const data = await res.json();
-    if (Array.isArray(data)) {
-      tasks = data.map(t => ({
-        id: t.id,
-        text: t.title,
-        title: t.title,
-        type: t.task_type || 'wajib',
-        category: t.category === 'Harian' ? 'daily' :
-                  t.category === 'Mingguan' ? 'weekly' :
-                  t.category === 'Bulanan' ? 'monthly' : 'daily',
-        done: t.is_done || false,
-        priority: (t.priority || 'Sedang').toLowerCase(),
-        role: t.role === 'SPV' ? 'spv' :
-              t.role === 'Retail Assistant' ? 'ra' : 'semua',
-        due_date: t.due_date,
-        date: t.due_date,
-        attachment: t.attachment || null
-      }));
-      renderAll();
-    }
-  } catch(e) {
-    console.log('Load from API failed:', e);
-  }
-}
+            <!-- To-Do Harian Screen -->
+            <section id="screen-harian" class="screen">
+                <div class="filters">
+                    <select id="filterRoleHarian" class="form-control" onchange="renderAll()">
+                        <option value="all">Semua Role</option>
+                        <option value="Retail Assistant">Retail Assistant</option>
+                        <option value="SPV">SPV</option>
+                    </select>
+                    <select id="filterPriorityHarian" class="form-control" onchange="renderAll()">
+                        <option value="all">Semua Prioritas</option>
+                        <option value="Tinggi">Tinggi</option>
+                        <option value="Sedang">Sedang</option>
+                        <option value="Rendah">Rendah</option>
+                    </select>
+                </div>
+                <div class="task-list" id="harian-list">
+                    <p class="empty-state">Memuat tasks...</p>
+                </div>
+            </section>
 
-function renderAll() {
-  const wajib = tasks.filter(t => t.type === 'wajib');
-  const insidental = tasks.filter(t => t.type === 'insidental');
-  const daily = tasks.filter(t => t.category === 'daily');
-  const weekly = tasks.filter(t => t.category === 'weekly');
-  const monthly = tasks.filter(t => t.category === 'monthly');
-  const ra = tasks.filter(t => t.role === 'ra');
-  const spv = tasks.filter(t => t.role === 'spv');
+            <!-- Mingguan Screen -->
+            <section id="screen-mingguan" class="screen">
+                <div class="filters">
+                    <select id="filterRoleMingguan" class="form-control" onchange="renderAll()">
+                        <option value="all">Semua Role</option>
+                        <option value="Retail Assistant">Retail Assistant</option>
+                        <option value="SPV">SPV</option>
+                    </select>
+                </div>
+                <div class="task-list" id="mingguan-list">
+                    <p class="empty-state">Memuat tasks...</p>
+                </div>
+            </section>
 
-  document.getElementById('dash-done').textContent = tasks.filter(t => t.done).length;
-  document.getElementById('dash-pending').textContent = tasks.filter(t => !t.done).length;
-  document.getElementById('dash-total').textContent = tasks.length;
-  document.getElementById('badge-closing').textContent = tasks.filter(t => !t.done).length;
-  document.getElementById('badge-daily').textContent = daily.length;
-  document.getElementById('count-wajib').textContent = `(${wajib.filter(t=>t.done).length}/${wajib.length})`;
-  document.getElementById('count-insidental').textContent = `(${insidental.filter(t=>t.done).length}/${insidental.length})`;
+            <!-- Bulanan Screen -->
+            <section id="screen-bulanan" class="screen">
+                <div class="filters">
+                    <select id="filterRoleBulanan" class="form-control" onchange="renderAll()">
+                        <option value="all">Semua Role</option>
+                        <option value="Retail Assistant">Retail Assistant</option>
+                        <option value="SPV">SPV</option>
+                    </select>
+                </div>
+                <div class="task-list" id="bulanan-list">
+                    <p class="empty-state">Memuat tasks...</p>
+                </div>
+            </section>
 
-  renderList('list-wajib', wajib);
-  renderList('list-insidental', insidental);
-  renderList('list-daily', daily);
-  renderList('list-weekly', weekly);
-  renderList('list-monthly', monthly);
-  renderList('list-ra', ra);
-  renderList('list-spv', spv);
-  renderMiniList('dash-closing-list', [...wajib.slice(0,3), ...insidental.slice(0,2)]);
-  renderMiniList('dash-daily-list', daily.slice(0,5));
-  updateWAReport();
-}
+            <!-- Retail Assistant Screen -->
+            <section id="screen-retail" class="screen">
+                <div class="filters">
+                    <select id="filterCategoryRetail" class="form-control" onchange="renderAll()">
+                        <option value="all">Semua Kategori</option>
+                        <option value="Harian">Harian</option>
+                        <option value="Mingguan">Mingguan</option>
+                        <option value="Bulanan">Bulanan</option>
+                    </select>
+                </div>
+                <div class="task-list" id="retail-list">
+                    <p class="empty-state">Memuat tasks...</p>
+                </div>
+            </section>
 
-function renderList(id, list) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (list.length === 0) {
-    el.innerHTML = `<div class="empty-state"><i class="ti ti-inbox"></i><p>Tidak ada task</p></div>`;
-    return;
-  }
-  el.innerHTML = list.map(t => `
-    <div class="task-row ${t.done ? 'done' : ''}">
-      <label class="task-checkbox">
-        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask('${t.id}')">
-        <span class="checkmark"></span>
-      </label>
-      <div class="task-content-wrapper">
-        <div class="task-content">
-          <span class="task-name">${t.text}${t.attachment ? '<span class="attachment-indicator"><i class="ti ti-paperclip"></i></span>' : ''}</span>
-          <span class="task-priority ${t.priority}">${t.priority}</span>
-        </div>
-        ${t.date ? renderDateHTML(t.date) : ''}
-        ${t.attachment ? renderAttachmentHTML(t.attachment) : ''}
-      </div>
-      <button class="btn-icon btn-delete" onclick="deleteTask('${t.id}')"><i class="ti ti-trash"></i></button>
+            <!-- SPV Screen -->
+            <section id="screen-spv" class="screen">
+                <div class="filters">
+                    <select id="filterCategorySPV" class="form-control" onchange="renderAll()">
+                        <option value="all">Semua Kategori</option>
+                        <option value="Harian">Harian</option>
+                        <option value="Mingguan">Mingguan</option>
+                        <option value="Bulanan">Bulanan</option>
+                    </select>
+                </div>
+                <div class="task-list" id="spv-list">
+                    <p class="empty-state">Memuat tasks...</p>
+                </div>
+            </section>
+
+            <!-- Template MOM Screen -->
+            <section id="screen-mom" class="screen">
+                <div class="mom-templates">
+                    <div class="mom-card">
+                        <h3><i class="ti ti-sun"></i> Briefing Pagi</h3>
+                        <div class="mom-content">
+                            <p><strong>Tanggal:</strong> <span class="mom-date"></span></p>
+                            <p><strong>Agenda:</strong></p>
+                            <ul>
+                                <li>Review target harian</li>
+                                <li>Informasi promo & produk baru</li>
+                                <li>Sharing best practices</li>
+                                <li>Reminder SOP</li>
+                            </ul>
+                            <p><strong>Peserta:</strong> Seluruh tim retail</p>
+                        </div>
+                        <button class="btn btn-secondary" onclick="copyMOM('briefing')">
+                            <i class="ti ti-copy"></i> Copy Template
+                        </button>
+                    </div>
+                    
+                    <div class="mom-card">
+                        <h3><i class="ti ti-moon"></i> Closing</h3>
+                        <div class="mom-content">
+                            <p><strong>Tanggal:</strong> <span class="mom-date"></span></p>
+                            <p><strong>Agenda:</strong></p>
+                            <ul>
+                                <li>Review penjualan harian</li>
+                                <li>Pencapaian target</li>
+                                <li>Kendala & solusi</li>
+                                <li>Stock check</li>
+                                <li>Kebersihan toko</li>
+                            </ul>
+                            <p><strong>Peserta:</strong> Tim retail & SPV</p>
+                        </div>
+                        <button class="btn btn-secondary" onclick="copyMOM('closing')">
+                            <i class="ti ti-copy"></i> Copy Template
+                        </button>
+                    </div>
+                    
+                    <div class="mom-card">
+                        <h3><i class="ti ti-chart-bar"></i> Evaluasi Mingguan</h3>
+                        <div class="mom-content">
+                            <p><strong>Periode:</strong> <span class="mom-week"></span></p>
+                            <p><strong>Agenda:</strong></p>
+                            <ul>
+                                <li>Review mingguan sales</li>
+                                <li>Analisis traffic & conversion</li>
+                                <li>Evaluasi customer service</li>
+                                <li>Planning minggu depan</li>
+                                <li>Training needs</li>
+                            </ul>
+                            <p><strong>Peserta:</strong> Tim retail, SPV & Manager</p>
+                        </div>
+                        <button class="btn btn-secondary" onclick="copyMOM('evaluasi')">
+                            <i class="ti ti-copy"></i> Copy Template
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Screen -->
+            <section id="screen-settings" class="screen">
+                <div class="settings-card">
+                    <h3><i class="ti ti-settings"></i> Pengaturan Aplikasi</h3>
+                    
+                    <div class="form-group">
+                        <label>Nomor WhatsApp Manager</label>
+                        <input type="text" id="waNumber" class="form-control" placeholder="Contoh: 6281234567890">
+                        <small>Format: 62xxxxxxxxxx (tanpa +)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Waktu Reminder</label>
+                        <input type="time" id="reminderTime" class="form-control" value="09:00">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Nama Default Petugas</label>
+                        <input type="text" id="defaultName" class="form-control" placeholder="Nama petugas default">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Tema</label>
+                        <div class="toggle-group">
+                            <span>Light</span>
+                            <label class="toggle">
+                                <input type="checkbox" id="themeToggle" onchange="toggleDarkMode()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>Dark</span>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="settings-actions">
+                        <button class="btn btn-primary" onclick="saveSettings()">
+                            <i class="ti ti-device-floppy"></i> Simpan Pengaturan
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportData()">
+                            <i class="ti ti-download"></i> Export Data
+                        </button>
+                        <button class="btn btn-danger" onclick="clearAllData()">
+                            <i class="ti ti-trash"></i> Hapus Semua Data
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
-  `).join('');
-}
 
-function renderDateHTML(dateString) {
-  if (!dateString) return '';
-  const dateObj = new Date(dateString);
-  const dayName = dateObj.toLocaleDateString('id-ID', { weekday: 'long' });
-  const formattedDate = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-  return `<div class="task-date"><i class="ti ti-calendar-event"></i><span class="date-day">${dayName}</span><span class="date-full">${formattedDate}</span></div>`;
-}
+    <!-- Add Task Modal -->
+    <div class="modal" id="taskModal">
+        <div class="modal-overlay" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Tambah Task Baru</h2>
+                <button class="btn-icon" onclick="closeModal()">
+                    <i class="ti ti-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm" onsubmit="event.preventDefault(); addTask();">
+                    <div class="form-group">
+                        <label>Judul Task <span class="required">*</span></label>
+                        <input type="text" id="taskTitle" class="form-control" required placeholder="Masukkan judul task">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Kategori <span class="required">*</span></label>
+                            <select id="taskCategory" class="form-control" required>
+                                <option value="Harian">Harian</option>
+                                <option value="Mingguan">Mingguan</option>
+                                <option value="Bulanan">Bulanan</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Role <span class="required">*</span></label>
+                            <select id="taskRole" class="form-control" required>
+                                <option value="Semua">Semua</option>
+                                <option value="Retail Assistant">Retail Assistant</option>
+                                <option value="SPV">SPV</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Prioritas <span class="required">*</span></label>
+                            <select id="taskPriority" class="form-control" required>
+                                <option value="Tinggi">Tinggi</option>
+                                <option value="Sedang" selected>Sedang</option>
+                                <option value="Rendah">Rendah</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipe Task <span class="required">*</span></label>
+                            <select id="taskType" class="form-control" required>
+                                <option value="wajib">Wajib</option>
+                                <option value="insidental">Insidental</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Deskripsi</label>
+                        <textarea id="taskDescription" class="form-control" rows="3" placeholder="Deskripsi task (opsional)"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Due Date</label>
+                        <input type="date" id="taskDueDate" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Attachment</label>
+                        <div class="attachment-toggle">
+                            <label class="radio-label">
+                                <input type="radio" name="attachmentType" value="none" checked onchange="toggleAttachmentType()">
+                                <span>Tidak ada</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="attachmentType" value="link" onchange="toggleAttachmentType()">
+                                <span>Link</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="attachmentType" value="file" onchange="toggleAttachmentType()">
+                                <span>File</span>
+                            </label>
+                        </div>
+                        
+                        <div id="linkInput" class="attachment-input" style="display: none;">
+                            <input type="url" id="taskLink" class="form-control" placeholder="https://example.com">
+                        </div>
+                        
+                        <div id="fileInput" class="attachment-input" style="display: none;">
+                            <input type="file" id="taskFile" class="form-control" onchange="handleFileSelect(event)">
+                            <div id="filePreview" class="file-preview"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-function renderAttachmentHTML(attachment) {
-  if (!attachment) return '';
-  if (attachment.type === 'link') {
-    return `<div class="task-attachments"><a href="${attachment.url}" target="_blank" rel="noopener" class="task-attachment"><i class="ti ti-external-link"></i><span>${attachment.name}</span></a></div>`;
-  } else if (attachment.type === 'file') {
-    return `<div class="task-attachments"><a href="${attachment.data}" download="${attachment.name}" class="task-attachment attachment-file"><i class="ti ti-file-download"></i><span>${attachment.name} (${attachment.size})</span></a></div>`;
-  }
-  return '';
-}
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
-function renderMiniList(id, list) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (list.length === 0) { el.innerHTML = '<div class="empty-mini">Tidak ada data</div>'; return; }
-  el.innerHTML = list.map(t => `<div class="mini-task ${t.done ? 'done' : ''}"><i class="ti ti-${t.done ? 'check-circle' : 'circle'}"></i><span>${t.text}</span></div>`).join('');
-}
+    <script>
+        // API Configuration
+        const API_BASE_URL = 'https://wonsa-to-do-production.up.railway.app';
+        
+        // State
+        let tasks = [];
+        let currentScreen = 'dashboard';
+        let selectedFile = null;
+        let selectedFileBase64 = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            loadTasksFromAPI();
+            updateClock();
+            setInterval(updateClock, 1000);
+            updateMOMDates();
+            
+            // Check for saved dark mode
+            const savedDarkMode = localStorage.getItem('darkMode');
+            if (savedDarkMode === 'true') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.getElementById('themeToggle').checked = true;
+                document.getElementById('darkModeIcon').classList.replace('ti-moon', 'ti-sun');
+            }
+        });
+        
+        // Navigation
+        function go(screen) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            
+            // Show selected screen
+            document.getElementById('screen-' + screen).classList.add('active');
+            
+            // Update active nav
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                if (link.getAttribute('onclick').includes(screen)) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // Update page title
+            const titles = {
+                'dashboard': 'Dashboard',
+                'closing': 'Closing Harian',
+                'harian': 'To-Do Harian',
+                'mingguan': 'Mingguan',
+                'bulanan': 'Bulanan',
+                'retail': 'Retail Assistant',
+                'spv': 'SPV',
+                'mom': 'Template MOM',
+                'settings': 'Settings'
+            };
+            document.getElementById('pageTitle').textContent = titles[screen] || 'Dashboard';
+            
+            currentScreen = screen;
+            
+            // Re-render if needed
+            if (screen !== 'mom' && screen !== 'settings') {
+                renderAll();
+            }
+            
+            // Update MOM dates when on MOM screen
+            if (screen === 'mom') {
+                updateMOMDates();
+            }
+        }
+        
+        // Load Tasks from API
+        async function loadTasksFromAPI() {
+            try {
+                showToast('Memuat tasks...', 'info');
+                const response = await fetch(`${API_BASE_URL}/tasks`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load tasks');
+                }
+                
+                tasks = await response.json();
+                renderAll();
+                updateStats();
+                showToast('Tasks berhasil dimuat', 'success');
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                showToast('Gagal memuat tasks', 'error');
+                
+                // Show empty states
+                document.querySelectorAll('.task-list, .task-list-mini').forEach(el => {
+                    el.innerHTML = '<p class="empty-state">Gagal memuat tasks. Silakan coba lagi.</p>';
+                });
+            }
+        }
+        
+        // Add Task
+        async function addTask() {
+            const title = document.getElementById('taskTitle').value.trim();
+            const category = document.getElementById('taskCategory').value;
+            const role = document.getElementById('taskRole').value;
+            const priority = document.getElementById('taskPriority').value;
+            const taskType = document.getElementById('taskType').value;
+            const description = document.getElementById('taskDescription').value.trim();
+            const dueDate = document.getElementById('taskDueDate').value;
+            
+            if (!title) {
+                showToast('Judul task wajib diisi', 'error');
+                return;
+            }
+            
+            const taskData = {
+                title: title,
+                category: category,
+                role: role,
+                priority: priority,
+                task_type: taskType,
+                description: description || null,
+                due_date: dueDate || null,
+                link: null,
+                attachment: null
+            };
+            
+            // Handle attachment
+            const attachmentType = document.querySelector('input[name="attachmentType"]:checked').value;
+            if (attachmentType === 'link') {
+                taskData.link = document.getElementById('taskLink').value.trim() || null;
+            } else if (attachmentType === 'file' && selectedFileBase64) {
+                taskData.attachment = selectedFileBase64;
+            }
+            
+            try {
+                showToast('Menyimpan task...', 'info');
+                const response = await fetch(`${API_BASE_URL}/tasks`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(taskData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to add task');
+                }
+                
+                const newTask = await response.json();
+                tasks.push(newTask);
+                
+                closeModal();
+                resetTaskForm();
+                renderAll();
+                updateStats();
+                showToast('Task berhasil ditambahkan', 'success');
+            } catch (error) {
+                console.error('Error adding task:', error);
+                showToast('Gagal menambahkan task', 'error');
+            }
+        }
+        
+        // Toggle Task
+        async function toggleTask(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks/${id}/toggle`, {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to toggle task');
+                }
+                
+                const updatedTask = await response.json();
+                
+                // Update local state
+                const index = tasks.findIndex(t => t.id === id);
+                if (index !== -1) {
+                    tasks[index] = updatedTask;
+                }
+                
+                renderAll();
+                updateStats();
+                
+                if (updatedTask.is_done) {
+                    showToast('Task selesai!', 'success');
+                }
+            } catch (error) {
+                console.error('Error toggling task:', error);
+                showToast('Gagal mengupdate task', 'error');
+            }
+        }
+        
+        // Update Task Status
+        async function updateTaskStatus(id, isDone) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ is_done: isDone })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to update task');
+                }
+                
+                const updatedTask = await response.json();
+                
+                // Update local state
+                const index = tasks.findIndex(t => t.id === id);
+                if (index !== -1) {
+                    tasks[index] = updatedTask;
+                }
+                
+                renderAll();
+                updateStats();
+            } catch (error) {
+                console.error('Error updating task:', error);
+                showToast('Gagal mengupdate task', 'error');
+            }
+        }
+        
+        // Delete Task
+        async function deleteTask(id) {
+            if (!confirm('Yakin ingin menghapus task ini?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to delete task');
+                }
+                
+                tasks = tasks.filter(t => t.id !== id);
+                renderAll();
+                updateStats();
+                showToast('Task berhasil dihapus', 'success');
+            } catch (error) {
+                console.error('Error deleting task:', error);
+                showToast('Gagal menghapus task', 'error');
+            }
+        }
+        
+        // Render All
+        function renderAll() {
+            renderDashboard();
+            renderClosing();
+            renderHarian();
+            renderMingguan();
+            renderBulanan();
+            renderRetail();
+            renderSPV();
+        }
+        
+        // Render Dashboard
+        function renderDashboard() {
+            const harianContainer = document.getElementById('dashboard-harian');
+            const mingguanContainer = document.getElementById('dashboard-mingguan');
+            
+            const harianTasks = tasks.filter(t => t.category === 'Harian').slice(0, 5);
+            const mingguanTasks = tasks.filter(t => t.category === 'Mingguan').slice(0, 5);
+            
+            harianContainer.innerHTML = renderList(harianTasks, true);
+            mingguanContainer.innerHTML = renderList(mingguanTasks, true);
+        }
+        
+        // Render Closing
+        function renderClosing() {
+            const container = document.getElementById('closing-list');
+            const closingTasks = tasks.filter(t => t.category === 'Harian');
+            
+            const total = closingTasks.length;
+            const done = closingTasks.filter(t => t.is_done).length;
+            const pending = total - done;
+            
+            document.getElementById('closingTotal').textContent = total;
+            document.getElementById('closingDone').textContent = done;
+            document.getElementById('closingPending').textContent = pending;
+            
+            container.innerHTML = renderList(closingTasks);
+        }
+        
+        // Render Harian
+        function renderHarian() {
+            const container = document.getElementById('harian-list');
+            const roleFilter = document.getElementById('filterRoleHarian').value;
+            const priorityFilter = document.getElementById('filterPriorityHarian').value;
+            
+            let filtered = tasks.filter(t => t.category === 'Harian');
+            
+            if (roleFilter !== 'all') {
+                filtered = filtered.filter(t => t.role === roleFilter || t.role === 'Semua');
+            }
+            
+            if (priorityFilter !== 'all') {
+                filtered = filtered.filter(t => t.priority === priorityFilter);
+            }
+            
+            container.innerHTML = renderList(filtered);
+        }
+        
+        // Render Mingguan
+        function renderMingguan() {
+            const container = document.getElementById('mingguan-list');
+            const roleFilter = document.getElementById('filterRoleMingguan').value;
+            
+            let filtered = tasks.filter(t => t.category === 'Mingguan');
+            
+            if (roleFilter !== 'all') {
+                filtered = filtered.filter(t => t.role === roleFilter || t.role === 'Semua');
+            }
+            
+            container.innerHTML = renderList(filtered);
+        }
+        
+        // Render Bulanan
+        function renderBulanan() {
+            const container = document.getElementById('bulanan-list');
+            const roleFilter = document.getElementById('filterRoleBulanan').value;
+            
+            let filtered = tasks.filter(t => t.category === 'Bulanan');
+            
+            if (roleFilter !== 'all') {
+                filtered = filtered.filter(t => t.role === roleFilter || t.role === 'Semua');
+            }
+            
+            container.innerHTML = renderList(filtered);
+        }
+        
+        // Render Retail
+        function renderRetail() {
+            const container = document.getElementById('retail-list');
+            const categoryFilter = document.getElementById('filterCategoryRetail').value;
+            
+            let filtered = tasks.filter(t => t.role === 'Retail Assistant' || t.role === 'Semua');
+            
+            if (categoryFilter !== 'all') {
+                filtered = filtered.filter(t => t.category === categoryFilter);
+            }
+            
+            container.innerHTML = renderList(filtered);
+        }
+        
+        // Render SPV
+        function renderSPV() {
+            const container = document.getElementById('spv-list');
+            const categoryFilter = document.getElementById('filterCategorySPV').value;
+            
+            let filtered = tasks.filter(t => t.role === 'SPV' || t.role === 'Semua');
+            
+            if (categoryFilter !== 'all') {
+                filtered = filtered.filter(t => t.category === categoryFilter);
+            }
+            
+            container.innerHTML = renderList(filtered);
+        }
+        
+        // Render List
+        function renderList(taskList, isMini = false) {
+            if (taskList.length === 0) {
+                return '<p class="empty-state">Tidak ada task</p>';
+            }
+            
+            const priorityClass = {
+                'Tinggi': 'priority-high',
+                'Sedang': 'priority-medium',
+                'Rendah': 'priority-low'
+            };
+            
+            const priorityIcon = {
+                'Tinggi': 'ti-flag-filled',
+                'Sedang': 'ti-flag',
+                'Rendah': 'ti-flag-3'
+            };
+            
+            return taskList.map(task => `
+                <div class="task-item ${task.is_done ? 'done' : ''} ${isMini ? 'mini' : ''}" data-id="${task.id}">
+                    <div class="task-checkbox">
+                        <input type="checkbox" ${task.is_done ? 'checked' : ''} 
+                               onchange="toggleTask(${task.id})" id="task-${task.id}">
+                        <label for="task-${task.id}"></label>
+                    </div>
+                    <div class="task-content">
+                        <div class="task-title">${escapeHtml(task.title)}</div>
+                        ${task.description ? `<div class="task-desc">${escapeHtml(task.description)}</div>` : ''}
+                        <div class="task-meta">
+                            <span class="badge badge-${priorityClass[task.priority]}">
+                                <i class="ti ${priorityIcon[task.priority]}"></i>
+                                ${task.priority}
+                            </span>
+                            <span class="badge badge-role">${task.role}</span>
+                            ${task.task_type === 'wajib' ? '<span class="badge badge-type-wajib">Wajib</span>' : '<span class="badge badge-type-ins">Insidental</span>'}
+                            ${task.due_date ? `<span class="badge badge-date"><i class="ti ti-calendar"></i> ${formatDate(task.due_date)}</span>` : ''}
+                        </div>
+                        ${task.link ? `<div class="task-link"><a href="${escapeHtml(task.link)}" target="_blank"><i class="ti ti-link"></i> ${escapeHtml(task.link)}</a></div>` : ''}
+                        ${task.attachment ? `<div class="task-attachment"><i class="ti ti-paperclip"></i> Attachment tersedia</div>` : ''}
+                    </div>
+                    ${!isMini ? `
+                    <div class="task-actions">
+                        <button class="btn-icon btn-delete" onclick="deleteTask(${task.id})" title="Hapus">
+                            <i class="ti ti-trash"></i>
+                        </button>
+                    </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+        
+        // Update Stats
+        function updateStats() {
+            document.getElementById('totalTasks').textContent = tasks.length;
+            document.getElementById('completedTasks').textContent = tasks.filter(t => t.is_done).length;
+            document.getElementById('pendingTasks').textContent = tasks.filter(t => !t.is_done).length;
+            document.getElementById('highPriorityTasks').textContent = tasks.filter(t => t.priority === 'Tinggi' && !t.is_done).length;
+        }
+        
+        // Modal Functions
+        function openModal() {
+            document.getElementById('taskModal').classList.add('active');
+            document.getElementById('taskTitle').focus();
+        }
+        
+        function closeModal() {
+            document.getElementById('taskModal').classList.remove('active');
+            resetTaskForm();
+        }
+        
+        function resetTaskForm() {
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskCategory').value = 'Harian';
+            document.getElementById('taskRole').value = 'Semua';
+            document.getElementById('taskPriority').value = 'Sedang';
+            document.getElementById('taskType').value = 'wajib';
+            selectedFile = null;
+            selectedFileBase64 = null;
+            document.getElementById('filePreview').innerHTML = '';
+            toggleAttachmentType();
+        }
+        
+        // Attachment Toggle
+        function toggleAttachmentType() {
+            const type = document.querySelector('input[name="attachmentType"]:checked').value;
+            
+            document.getElementById('linkInput').style.display = type === 'link' ? 'block' : 'none';
+            document.getElementById('fileInput').style.display = type === 'file' ? 'block' : 'none';
+            
+            if (type !== 'file') {
+                selectedFile = null;
+                selectedFileBase64 = null;
+                document.getElementById('filePreview').innerHTML = '';
+            }
+        }
+        
+        // File Select
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            selectedFile = file;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedFileBase64 = e.target.result;
+                document.getElementById('filePreview').innerHTML = `
+                    <div class="file-info">
+                        <i class="ti ti-file"></i>
+                        <span>${escapeHtml(file.name)} (${formatFileSize(file.size)})</span>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            
+            if (isDark) {
+                document.body.removeAttribute('data-theme');
+                localStorage.setItem('darkMode', 'false');
+                document.getElementById('darkModeIcon').classList.replace('ti-sun', 'ti-moon');
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('darkMode', 'true');
+                document.getElementById('darkModeIcon').classList.replace('ti-moon', 'ti-sun');
+            }
+        }
+        
+        // Clock Update
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('id-ID', { hour12: false });
+            document.getElementById('clock').textContent = timeString;
+        }
+        
+        // MOM Functions
+        function updateMOMDates() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('id-ID', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            document.querySelectorAll('.mom-date').forEach(el => {
+                el.textContent = dateStr;
+            });
+            
+            // Week range
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay());
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            
+            const weekStr = `${startOfWeek.toLocaleDateString('id-ID')} - ${endOfWeek.toLocaleDateString('id-ID')}`;
+            document.querySelectorAll('.mom-week').forEach(el => {
+                el.textContent = weekStr;
+            });
+        }
+        
+        function copyMOM(type) {
+            const templates = {
+                'briefing': `[BRIEFING PAGI EIGER WONOSARI]
+Tanggal: ${new Date().toLocaleDateString('id-ID')}
 
-async function toggleTask(id) {
-  const task = tasks.find(t => t.id === id);
-  if (!task) return;
-  task.done = !task.done;
-  try { await fetch(`${API}/tasks/${id}/done?is_done=${task.done}`, { method: 'PATCH' }); } catch(e) {}
-  renderAll();
-}
+Agenda:
+1. Review target harian
+2. Informasi promo & produk baru  
+3. Sharing best practices
+4. Reminder SOP
 
-async function deleteTask(id) {
-  if (!confirm('Hapus task ini?')) return;
-  tasks = tasks.filter(t => t.id !== id);
-  try { await fetch(`${API}/tasks/${id}`, { method: 'DELETE' }); } catch(e) {}
-  renderAll();
-  showToast('Task dihapus');
-}
+Peserta: Seluruh tim retail
 
-async function addTask() {
-  const text = document.getElementById('modal-task').value.trim();
-  const category = document.getElementById('modal-category').value;
-  const priority = document.getElementById('modal-priority').value;
-  if (!text) { showToast('Isi nama task terlebih dahulu', 'error'); return; }
+---
+Sent from Eiger Wonosari Task Manager`,
+                'closing': `[CLOSING EIGER WONOSARI]
+Tanggal: ${new Date().toLocaleDateString('id-ID')}
 
-  const date = document.getElementById('modal-date').value;
-  const attachmentType = document.querySelector('.attachment-type-btn.active').dataset.type;
-  let attachment = null;
+Agenda:
+1. Review penjualan harian
+2. Pencapaian target
+3. Kendala & solusi
+4. Stock check
+5. Kebersihan toko
 
-  if (attachmentType === 'link') {
-    const linkUrl = document.getElementById('modal-attachment-link').value.trim();
-    if (linkUrl) attachment = { type: 'link', url: linkUrl, name: extractDomainName(linkUrl) };
-  } else if (attachmentType === 'file') {
-    const fileInput = document.getElementById('modal-attachment-file');
-    if (fileInput.files.length > 0) {
-      const file = fileInput.files[0];
-      const fileData = await readFileAsDataURL(file);
-      attachment = { type: 'file', name: file.name, size: formatFileSize(file.size), data: fileData, mimeType: file.type };
-    }
-  }
+Peserta: Tim retail & SPV
 
-  const role = category === 'ra' ? 'ra' : category === 'spv' ? 'spv' : 'semua';
-  const taskType = category === 'wajib' ? 'wajib' : 'insidental';
-  const taskCategory = category === 'wajib' || category === 'insidental' ? 'daily' :
-                       category === 'weekly' ? 'weekly' :
-                       category === 'monthly' ? 'monthly' : 'daily';
+---
+Sent from Eiger Wonosari Task Manager`,
+                'evaluasi': `[EVALUASI MINGGUAN EIGER WONOSARI]
+Periode: Minggu ini
 
-  try {
-    const res = await fetch(`${API}/tasks`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title: text,
-        category: taskCategory === 'weekly' ? 'Mingguan' : taskCategory === 'monthly' ? 'Bulanan' : 'Harian',
-        task_type: taskType,
-        priority: priority.charAt(0).toUpperCase() + priority.slice(1),
-        role: role === 'ra' ? 'Retail Assistant' : role === 'spv' ? 'SPV' : 'Semua',
-        due_date: date || null,
-        attachment: attachment
-      })
-    });
-    const saved = await res.json();
-    tasks.push({
-      id: saved.id || Date.now().toString(),
-      text, title: text, type: taskType,
-      category: taskCategory, done: false,
-      priority, role, due_date: date, date, attachment
-    });
-  } catch(e) {
-    tasks.push({
-      id: Date.now().toString(), text, title: text,
-      type: taskType, category: taskCategory,
-      done: false, priority, role, due_date: date, date, attachment
-    });
-  }
+Agenda:
+1. Review mingguan sales
+2. Analisis traffic & conversion
+3. Evaluasi customer service
+4. Planning minggu depan
+5. Training needs
 
-  closeModal();
-  resetAttachmentForm();
-  renderAll();
-  showToast('Task ditambahkan');
-}
+Peserta: Tim retail, SPV & Manager
 
-function updateSelectedDay() {
-  const dateInput = document.getElementById('modal-date');
-  const selectedDayEl = document.getElementById('selected-day');
-  if (dateInput.value) {
-    const dateObj = new Date(dateInput.value);
-    selectedDayEl.textContent = dateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    selectedDayEl.style.display = 'block';
-  } else {
-    selectedDayEl.textContent = 'Pilih tanggal';
-    selectedDayEl.style.display = 'none';
-  }
-}
-
-function resetDateTimeForm() {
-  document.getElementById('modal-date').value = '';
-  document.getElementById('selected-day').textContent = 'Pilih tanggal';
-  document.getElementById('selected-day').style.display = 'none';
-}
-
-function extractDomainName(url) {
-  try { return new URL(url).hostname.replace('www.', ''); } catch { return 'Link'; }
-}
-
-function readFileAsDataURL(file) {
-  return new Promise(resolve => {
-    const reader = new FileReader();
-    reader.onload = e => resolve(e.target.result);
-    reader.readAsDataURL(file);
-  });
-}
-
-function formatFileSize(bytes) {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024, sizes = ['Bytes','KB','MB','GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-}
-
-function setAttachmentType(type) {
-  document.querySelectorAll('.attachment-type-btn').forEach(btn => btn.classList.remove('active'));
-  document.getElementById(`btn-attachment-${type}`).classList.add('active');
-  document.getElementById(`btn-attachment-${type}`).dataset.type = type;
-  document.getElementById('attachment-link-wrapper').classList.toggle('hidden', type !== 'link');
-  document.getElementById('attachment-file-wrapper').classList.toggle('hidden', type !== 'file');
-}
-
-function handleFileSelect(input) {
-  if (input.files.length > 0) {
-    document.getElementById('selected-file-name').textContent = input.files[0].name;
-    document.getElementById('file-selected-info').classList.remove('hidden');
-  }
-}
-
-function removeSelectedFile() {
-  document.getElementById('modal-attachment-file').value = '';
-  document.getElementById('file-selected-info').classList.add('hidden');
-}
-
-function resetAttachmentForm() {
-  document.getElementById('modal-attachment-link').value = '';
-  document.getElementById('modal-attachment-file').value = '';
-  document.getElementById('file-selected-info').classList.add('hidden');
-  setAttachmentType('link');
-}
-
-function openModal(type) {
-  document.getElementById('modal').classList.add('open');
-  document.getElementById('modal-task').value = '';
-  if (type) document.getElementById('modal-category').value = type;
-  resetAttachmentForm();
-  resetDateTimeForm();
-  const dateInput = document.getElementById('modal-date');
-  dateInput.value = new Date().toISOString().split('T')[0];
-  dateInput.onchange = updateSelectedDay;
-  updateSelectedDay();
-  document.getElementById('modal-task').focus();
-}
-
-function closeModal() {
-  document.getElementById('modal').classList.remove('open');
-  resetAttachmentForm();
-  resetDateTimeForm();
-}
-
-function updateOfficer() {
-  const name = document.getElementById('officer-name').value.trim();
-  const badge = document.getElementById('officer-display');
-  if (name) {
-    badge.innerHTML = `<i class="ti ti-user-check"></i><span>${name}</span>`;
-    badge.classList.add('has-value');
-  } else {
-    badge.innerHTML = `<i class="ti ti-id-badge"></i><span>Belum diisi</span>`;
-    badge.classList.remove('has-value');
-  }
-  updateWAReport();
-}
-
-function updateWAReport() {
-  const name = document.getElementById('officer-name').value.trim() || 'Petugas';
-  const wajib = tasks.filter(t => t.type === 'wajib');
-  const insidental = tasks.filter(t => t.type === 'insidental');
-  const wajibPending = wajib.filter(t => !t.done);
-  const insPending = insidental.filter(t => !t.done);
-  const now = new Date();
-  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  const date = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-
-  let report = `📋 *LAPORAN CLOSING HARIAN*\n🏪 Eiger Wonosari — ${date}\n👤 Petugas: ${name}\n⏰ Waktu: ${time} WIB\n\n`;
-  report += `✅ Task Wajib: ${wajib.filter(t=>t.done).length}/${wajib.length}\n`;
-  report += `✅ Insidental: ${insidental.filter(t=>t.done).length}/${insidental.length}\n\n`;
-  if (wajibPending.length > 0) { report += `🔴 *Belum Selesai:*\n`; wajibPending.forEach((t,i) => report += `${i+1}. ${t.text}\n`); report += '\n'; }
-  if (insPending.length > 0) { report += `🟡 *Insidental Pending:*\n`; insPending.forEach((t,i) => report += `${i+1}. ${t.text}\n`); }
-  if (wajibPending.length === 0 && insPending.length === 0) report += `🎉 Semua task sudah selesai!`;
-  document.getElementById('wa-preview').textContent = report;
-}
-
-function sendWA() {
-  window.open(`https://wa.me/?text=${encodeURIComponent(document.getElementById('wa-preview').textContent)}`, '_blank');
-  showToast('Membuka WhatsApp...');
-}
-
-function copyReport() {
-  navigator.clipboard.writeText(document.getElementById('wa-preview').textContent).then(() => showToast('Laporan dicopy!'));
-}
-
-function sendMOM(type) {
-  const date = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  const templates = {
-    pagi: `📋 *MOM BRIEFING PAGI*\n🏪 Eiger Wonosari\n📅 ${date}\n\nAgenda:\n• Review target harian\n• Pembagian area kerja\n• Update stok baru\n• Informasi promo\n\n_Catatan: Tambahkan hasil briefing di sini_`,
-    closing: `📋 *MOM CLOSING*\n🏪 Eiger Wonosari\n📅 ${date}\n\nAgenda:\n• Review penjualan hari ini\n• Permasalahan yang dihadapi\n• Target besok\n• Catatan penting\n\n_Catatan: Tambahkan hasil rapat di sini_`,
-    mingguan: `📋 *MOM EVALUASI MINGGUAN*\n🏪 Eiger Wonosari\n📅 Minggu ${getWeekNumber(new Date())}\n\nAgenda:\n• Capaian target minggu ini\n• Best performer\n• Area improvement\n• Rencana minggu depan\n\n_Catatan: Tambahkan hasil evaluasi di sini_`
-  };
-  window.open(`https://wa.me/?text=${encodeURIComponent(templates[type])}`, '_blank');
-  showToast('MOM dikirim!');
-}
-
-function saveSetting(type) {
-  if (type === 'wa') localStorage.setItem('wa-number', document.getElementById('wa-number').value);
-  else if (type === 'reminder') localStorage.setItem('reminder-time', document.getElementById('reminder-time').value);
-  else if (type === 'name') {
-    const name = document.getElementById('default-name').value;
-    localStorage.setItem('default-name', name);
-    document.getElementById('officer-name').value = name;
-    updateOfficer();
-  }
-  showToast('Pengaturan tersimpan');
-}
-
-function exportData() {
-  const blob = new Blob([JSON.stringify(tasks, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `eiger-tasks-${new Date().toISOString().split('T')[0]}.json`;
-  a.click();
-  showToast('Data diexport');
-}
-
-function clearAllData() {
-  if (!confirm('Yakin ingin menghapus semua data?')) return;
-  tasks = [];
-  renderAll();
-  showToast('Semua data dihapus');
-}
-
-function showToast(msg, type = 'success') {
-  const toast = document.getElementById('toast');
-  document.getElementById('toast-msg').textContent = msg;
-  toast.className = 'toast show ' + type;
-  setTimeout(() => toast.classList.remove('show'), 2500);
-}
-
-function updateClock() {
-  const now = new Date();
-  const el = document.getElementById('clock-time');
-  if (el) el.textContent = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-}
-
-function loadSettings() {
-  const waNum = localStorage.getItem('wa-number');
-  const reminder = localStorage.getItem('reminder-time');
-  const defName = localStorage.getItem('default-name');
-  if (waNum) document.getElementById('wa-number').value = waNum;
-  if (reminder) document.getElementById('reminder-time').value = reminder;
-  if (defName) {
-    document.getElementById('default-name').value = defName;
-    document.getElementById('officer-name').value = defName;
-    updateOfficer();
-  }
-}
-
-function initDarkMode() {
-  const savedTheme = localStorage.getItem('theme') || 'light';
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const theme = savedTheme === 'auto' ? (prefersDark ? 'dark' : 'light') : savedTheme;
-  if (theme === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); updateThemeUI(true); }
-  else { document.documentElement.removeAttribute('data-theme'); updateThemeUI(false); }
-}
-
-function toggleDarkMode() {
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  if (isDark) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); updateThemeUI(false); showToast('Mode terang diaktifkan'); }
-  else { document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); updateThemeUI(true); showToast('Mode gelap diaktifkan 🌙'); }
-}
-
-function updateThemeUI(isDark) {
-  const icon = document.getElementById('theme-icon');
-  const text = document.getElementById('theme-text');
-  icon.className = isDark ? 'ti ti-moon' : 'ti ti-sun';
-  text.textContent = isDark ? 'Mode Gelap' : 'Mode Terang';
-}
-
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-  if (!localStorage.getItem('theme') || localStorage.getItem('theme') === 'auto') {
-    if (e.matches) { document.documentElement.setAttribute('data-theme', 'dark'); updateThemeUI(true); }
-    else { document.documentElement.removeAttribute('data-theme'); updateThemeUI(false); }
-  }
-});
-
-// Init
-// Init
-document.addEventListener('DOMContentLoaded', () => {
-  const today = new Date();
-  const dateStr = today.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  document.getElementById('page-subtitle').textContent = dateStr;
-  document.getElementById('mom-today').textContent = dateStr;
-  document.getElementById('mom-today-2').textContent = dateStr;
-  document.getElementById('mom-week').textContent = 'Minggu ' + getWeekNumber(today);
-
-  loadTasksFromAPI();
-  loadSettings();
-  initDarkMode();
-  setInterval(updateClock, 1000);
-  updateClock();
-});
-
-window.onclick = function(e) {
-  if (e.target === document.getElementById('modal')) closeModal();
-};
-
-</script>
+---
+Sent from Eiger Wonosari Task Manager`
+            };
+            
+            navigator.clipboard.writeText(templates[type]).then(() => {
+                showToast('Template MOM berhasil disalin', 'success');
+            }).catch(() => {
+                showToast('Gagal menyalin template', 'error');
+            });
+        }
+        
+        // WhatsApp Report
+        function generateWAReport() {
+            const officerName = document.getElementById('officerName').value.trim();
+            if (!officerName) {
+                showToast('Mohon isi nama petugas terlebih dahulu', 'error');
+                document.getElementById('officerName').focus();
+                return;
+            }
+            
+            const harianTasks = tasks.filter(t => t.category === 'Harian');
+            const doneTasks = harianTasks.filter(t => t.is_done);
+            const pendingTasks = harianTasks.filter(t => !t.is_done);
+            
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('id-ID', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            let report = `*[CLOSING HARIAN EIGER WONOSARI]*\n\n`;
+            report += `Tanggal: ${dateStr}\n`;
+            report += `Petugas: ${officerName}\n`;
+            report += `Waktu: ${now.toLocaleTimeString('id-ID', { hour12: false })}\n\n`;
+            
+            report += `*TASK SELESAI (${doneTasks.length}/${harianTasks.length}):*\n`;
+            if (doneTasks.length === 0) {
+                report += `- Belum ada task yang selesai\n`;
+            } else {
+                doneTasks.forEach((t, i) => {
+                    report += `${i + 1}. ${t.title}\n`;
+                });
+            }
+            
+            report += `\n*TASK BELUM SELESAI (${pendingTasks.length}/${harianTasks.length}):*\n`;
+            if (pendingTasks.length === 0) {
+                report += `- Semua task sudah selesai\n`;
+            } else {
+                pendingTasks.forEach((t, i) => {
+                    report += `${i + 1}. ${t.title}\n`;
+                });
+            }
+            
+            report += `\n*SUMMARY:*\n`;
+            report += `Total Task: ${harianTasks.length}\n`;
+            report += `Selesai: ${doneTasks.length}\n`;
+            report += `Belum: ${pendingTasks.length}\n`;
+            report += `Progress: ${harianTasks.length > 0 ? Math.round((doneTasks.length / harianTasks.length) * 100) : 0}%\n\n`;
+            
+            report += `---\n`;
+            report += `_Sent from Eiger Wonosari Task Manager_`;
+            
+            document.getElementById('waText').textContent = report;
+            document.getElementById('waPreview').style.display = 'block';
+        }
+        
+        function sendWA() {
+            const waNumber = localStorage.getItem('waNumber') || '';
+            const text = document.getElementById('waText').textContent;
+            
+            if (!waNumber) {
+                showToast('Mohon atur nomor WA di Settings terlebih dahulu', 'error');
+                go('settings');
+                return;
+            }
+            
+            const encodedText = encodeURIComponent(text);
+            const waUrl = `https://wa.me/${waNumber}?text=${encodedText}`;
+            
+            window.open(waUrl, '_blank');
+        }
+        
+        // Settings Functions
+        function loadSettings() {
+            const waNumber = localStorage.getItem('waNumber') || '';
+            const reminderTime = localStorage.getItem('reminderTime') || '09:00';
+            const defaultName = localStorage.getItem('defaultName') || '';
+            
+            document.getElementById('waNumber').value = waNumber;
+            document.getElementById('reminderTime').value = reminderTime;
+            document.getElementById('defaultName').value = defaultName;
+            document.getElementById('officerName').value = defaultName;
+        }
+        
+        function saveSettings() {
+            const waNumber = document.getElementById('waNumber').value.trim();
+            const reminderTime = document.getElementById('reminderTime').value;
+            const defaultName = document.getElementById('defaultName').value.trim();
+            
+            localStorage.setItem('waNumber', waNumber);
+            localStorage.setItem('reminderTime', reminderTime);
+            localStorage.setItem('defaultName', defaultName);
+            
+            // Update default name in closing
+            document.getElementById('officerName').value = defaultName;
+            
+            showToast('Pengaturan berhasil disimpan', 'success');
+        }
+        
+        function exportData() {
+            const data = {
+                tasks: tasks,
+                settings: {
+                    waNumber: localStorage.getItem('waNumber') || '',
+                    reminderTime: localStorage.getItem('reminderTime') || '09:00',
+                    defaultName: localStorage.getItem('defaultName') || ''
+                },
+                exportedAt: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `wonsa-task-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('Data berhasil diexport', 'success');
+        }
+        
+        function clearAllData() {
+            if (!confirm('PERINGATAN: Ini akan menghapus semua data lokal. Data di server tidak akan terhapus. Lanjutkan?')) {
+                return;
+            }
+            
+            localStorage.clear();
+            showToast('Data lokal berhasil dihapus', 'success');
+            
+            // Reload settings
+            loadSettings();
+        }
+        
+        // Utility Functions
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            const icons = {
+                'success': 'ti-check-circle',
+                'error': 'ti-alert-circle',
+                'info': 'ti-info-circle'
+            };
+            
+            toast.innerHTML = `
+                <i class="ti ${icons[type]}"></i>
+                <span>${escapeHtml(message)}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    container.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric' 
+            });
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Close modal on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
 </body>
 </html>
