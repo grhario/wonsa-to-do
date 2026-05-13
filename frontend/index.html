@@ -13,7 +13,7 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
-                    <i class="ti ti-mountain"></i>
+                    <img src="logo.png" alt="Eiger Logo" class="logo-img">
                     <span>Eiger Wonosari</span>
                 </div>
             </div>
@@ -657,6 +657,18 @@
         
         // Toggle Task
         async function toggleTask(id) {
+            const taskRow = document.querySelector(`.task-row[data-id="${id}"]`);
+            const checkbox = document.getElementById(`chk-${id}`);
+            const isChecked = checkbox.checked;
+            
+            // Add animation class
+            if (taskRow) {
+                taskRow.classList.add('task-completing');
+                if (isChecked) {
+                    taskRow.classList.add('task-completed');
+                }
+            }
+            
             try {
                 const response = await fetch(`${API_BASE_URL}/tasks/${id}/toggle`, {
                     method: 'POST'
@@ -674,16 +686,83 @@
                     tasks[index] = updatedTask;
                 }
                 
-                renderAll();
-                updateStats();
+                // Delay re-render to show animation
+                setTimeout(() => {
+                    renderAll();
+                    updateStats();
+                }, 400);
                 
                 if (updatedTask.is_done) {
-                    showToast('Task selesai!', 'success');
+                    showToast('✅ Task selesai!', 'success');
+                    // Trigger confetti effect for completed task
+                    triggerConfetti(taskRow);
+                } else {
+                    showToast('Task dibuka kembali', 'info');
                 }
             } catch (error) {
                 console.error('Error toggling task:', error);
                 showToast('Gagal mengupdate task', 'error');
+                if (taskRow) {
+                    taskRow.classList.remove('task-completing', 'task-completed');
+                }
             }
+        }
+        
+        // Confetti Effect for completed tasks
+        function triggerConfetti(element) {
+            if (!element) return;
+            
+            const rect = element.getBoundingClientRect();
+            const colors = ['#10b981', '#34d399', '#059669', '#6ee7b7', '#22c55e'];
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.style.cssText = `
+                    position: fixed;
+                    width: 8px;
+                    height: 8px;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    border-radius: 50%;
+                    pointer-events: none;
+                    z-index: 9999;
+                    left: ${rect.left + rect.width / 2}px;
+                    top: ${rect.top + rect.height / 2}px;
+                `;
+                document.body.appendChild(particle);
+                
+                const angle = (Math.PI * 2 * i) / 20;
+                const velocity = 100 + Math.random() * 100;
+                const vx = Math.cos(angle) * velocity;
+                const vy = Math.sin(angle) * velocity - 100;
+                
+                particle.animate([
+                    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                    { transform: `translate(${vx}px, ${vy + 200}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 800 + Math.random() * 400,
+                    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                }).onfinish = () => particle.remove();
+            }
+        }
+        
+        // Edit Task Function
+        function editTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+            
+            // Populate modal with task data
+            document.getElementById('taskTitle').value = task.title;
+            document.getElementById('taskCategory').value = task.category;
+            document.getElementById('taskRole').value = task.role;
+            document.getElementById('taskPriority').value = task.priority;
+            document.getElementById('taskType').value = task.task_type;
+            document.getElementById('taskDesc').value = task.description || '';
+            document.getElementById('taskDueDate').value = task.due_date || '';
+            document.getElementById('taskLink').value = task.link || '';
+            
+            // Show modal
+            openModal();
+            showToast('Mode edit task (fitur update menyusul)', 'info');
         }
         
         // Update Task Status
@@ -859,52 +938,87 @@
         // Render List
         function renderList(taskList, isMini = false) {
             if (taskList.length === 0) {
-                return '<p class="empty-state">Tidak ada task</p>';
+                return '<div class="empty-state"><i class="ti ti-inbox"></i><p>Belum ada task</p></div>';
             }
             
-            const priorityClass = {
-                'Tinggi': 'priority-high',
-                'Sedang': 'priority-medium',
-                'Rendah': 'priority-low'
+            const priorityColors = {
+                'Tinggi': 'tinggi',
+                'Sedang': 'sedang',
+                'Rendah': 'rendah'
             };
             
-            const priorityIcon = {
+            const priorityIcons = {
                 'Tinggi': 'ti-flag-filled',
                 'Sedang': 'ti-flag',
                 'Rendah': 'ti-flag-3'
             };
             
+            const roleIcons = {
+                'Retail Assistant': 'ti-users',
+                'SPV': 'ti-user-shield',
+                'Semua': 'ti-users-group'
+            };
+            
+            const typeIcons = {
+                'wajib': 'ti-checkbox',
+                'insidental': 'ti-clipboard-plus'
+            };
+            
             return taskList.map(task => `
-                <div class="task-item ${task.is_done ? 'done' : ''} ${isMini ? 'mini' : ''}" data-id="${task.id}">
-                    <div class="task-checkbox">
+                <div class="task-row ${task.is_done ? 'done' : ''} ${task.is_done ? 'task-completed' : ''}" data-id="${task.id}">
+                    <label class="task-checkbox">
                         <input type="checkbox" ${task.is_done ? 'checked' : ''} 
-                               onchange="toggleTask(${task.id})" id="task-${task.id}">
-                        <label for="task-${task.id}"></label>
-                    </div>
-                    <div class="task-content">
-                        <div class="task-title">${escapeHtml(task.title)}</div>
-                        ${task.description ? `<div class="task-desc">${escapeHtml(task.description)}</div>` : ''}
-                        <div class="task-meta">
-                            <span class="badge badge-${priorityClass[task.priority]}">
-                                <i class="ti ${priorityIcon[task.priority]}"></i>
-                                ${task.priority}
-                            </span>
-                            <span class="badge badge-role">${task.role}</span>
-                            ${task.task_type === 'wajib' ? '<span class="badge badge-type-wajib">Wajib</span>' : '<span class="badge badge-type-ins">Insidental</span>'}
-                            ${task.due_date ? `<span class="badge badge-date"><i class="ti ti-calendar"></i> ${formatDate(task.due_date)}</span>` : ''}
+                               onchange="toggleTask(${task.id})" id="chk-${task.id}">
+                        <span class="checkmark"></span>
+                    </label>
+                    <div class="task-content-wrapper">
+                        <div class="task-content">
+                            <div class="task-title-section">
+                                <span class="task-name">${escapeHtml(task.title)}</span>
+                                ${task.is_done ? '<span class="task-status-badge"><i class="ti ti-check-circle"></i> Selesai</span>' : ''}
+                            </div>
+                            <div class="task-badges">
+                                <span class="task-priority ${priorityColors[task.priority] || 'sedang'}">
+                                    <i class="ti ${priorityIcons[task.priority] || 'ti-flag'}"></i>
+                                    ${task.priority}
+                                </span>
+                                <span class="task-role-badge">
+                                    <i class="ti ${roleIcons[task.role] || 'ti-users'}"></i>
+                                    ${task.role}
+                                </span>
+                                <span class="task-type-badge ${task.task_type}">
+                                    <i class="ti ${typeIcons[task.task_type] || 'ti-checkbox'}"></i>
+                                    ${task.task_type === 'wajib' ? 'Wajib' : 'Insidental'}
+                                </span>
+                            </div>
                         </div>
-                        ${task.link ? `<div class="task-link"><a href="${escapeHtml(task.link)}" target="_blank"><i class="ti ti-link"></i> ${escapeHtml(task.link)}</a></div>` : ''}
-                        ${task.attachment ? `<div class="task-attachment"><i class="ti ti-paperclip"></i> Attachment tersedia</div>` : ''}
+                        ${task.due_date ? renderDateHTML(task.due_date) : ''}
                     </div>
-                    ${!isMini ? `
                     <div class="task-actions">
+                        <button class="btn-icon btn-edit" onclick="editTask(${task.id})" title="Edit">
+                            <i class="ti ti-edit"></i>
+                        </button>
                         <button class="btn-icon btn-delete" onclick="deleteTask(${task.id})" title="Hapus">
                             <i class="ti ti-trash"></i>
                         </button>
                     </div>
-                    ` : ''}
                 </div>
             `).join('');
+        }
+        
+        // Render Date
+        function renderDateHTML(dateString) {
+            if (!dateString) return '';
+            const dateObj = new Date(dateString);
+            const dayName = dateObj.toLocaleDateString('id-ID', { weekday: 'long' });
+            const formattedDate = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            return `
+                <div class="task-date">
+                    <i class="ti ti-calendar-event"></i>
+                    <span class="date-day">${dayName}</span>
+                    <span class="date-full">${formattedDate}</span>
+                </div>
+            `;
         }
         
         // Update Stats
