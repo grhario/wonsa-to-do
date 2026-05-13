@@ -46,7 +46,7 @@ def get_tasks(category: Optional[str] = None, role: Optional[str] = None):
 
 # POST buat task baru
 @app.post("/tasks")
-def create_task(task: TaskCreate):
+def create_task(task: Task):
     result = supabase.table("tasks").insert(task.dict()).execute()
     new_task = result.data[0]
     
