@@ -70,3 +70,54 @@ def get_wa_reminder():
     message = f"🔔 Reminder Task Prioritas Tinggi\nEiger Wonosari\n\n{task_list}"
     wa_url = f"https://wa.me/?text={message}"
     return {"url": wa_url, "count": len(tasks.data)}
+
+# ─── GOOGLE CALENDAR INTEGRATION ─────────────────────────
+import json
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from datetime import datetime, timedelta
+
+def get_calendar_service():
+    creds_json = os.getenv("GOOGLE_CREDENTIALS")
+    if not creds_json:
+        return None
+    creds_dict = json.loads(creds_json)
+    creds = service_account.Credentials.from_service_account_info(
+        creds_dict,
+        scopes=["https://www.googleapis.com/auth/calendar"]
+    )
+    return build("calendar", "v3", credentials=creds)
+
+@app.post("/calendar/sync")
+def sync_tasks_to_calendar():
+    service = get_calendar_service()
+    if not service:
+        raise HTTPException(status_code=500, detail="Google Calendar tidak terkonfigurasi")
+    
+    calendar_id = os.getenv("GOOGLE_CALENDAR_ID", "primary")
+    tasks = supabase.table("tasks").select("*").eq("is_done", False).execute()
+    
+    created = []
+    for task in tasks.data:
+        now = datetime.utcnow()
+        event = {
+            "summary": f"⏰ REMINDER: {task['title']}",
+            "description": f"Task belum selesai!\nKategori: {task['category']}\nPrioritas: {task['priority']}",
+            "start": {"dateTime": now.strftime("%Y-%m-%dT08:00:00+07:00"), "timeZone": "Asia/Jakarta"},
+            "end": {"dateTime": now.strftime("%Y-%m-%dT08:30:00+07:00"), "timeZone": "Asia/Jakarta"},
+            "reminders": {
+                "useDefault": False,
+                "overrides": [
+                    {"method": "popup", "minutes": 0},
+                    {"method": "popup", "minutes": 30}
+                ]
+            }
+        }
+        result = service.events().insert(calendarId=calendar_id, body=event).execute()
+        created.append(result.get("id"))
+    
+    return {"success": True, "events_created": len(created)}
+
+@app.get("/calendar/remind-pending")
+def remind_pending_tasks():
+    return sync_tasks_to_calendar()
