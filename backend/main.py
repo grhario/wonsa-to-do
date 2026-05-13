@@ -16,7 +16,7 @@ app.add_middleware(
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],`n    allow_credentials=True,
+   allow_headers=["*"],
 )
 
 supabase = create_client(
