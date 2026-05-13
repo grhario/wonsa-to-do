@@ -16,7 +16,7 @@ app.add_middleware(
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"],`n    allow_credentials=True,
 )
 
 supabase = create_client(
@@ -32,7 +32,7 @@ class Task(BaseModel):
     task_type: str = 'wajib'   # wajib / insidental
     description: Optional[str] = None
     due_date: Optional[date] = None
-    link: Optional[str] = None
+    link: Optional[str] = None`n    attachment: Optional[dict] = None
     attachment: Optional[dict] = None
 
 # GET semua task
