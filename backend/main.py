@@ -46,9 +46,35 @@ def get_tasks(category: Optional[str] = None, role: Optional[str] = None):
 
 # POST buat task baru
 @app.post("/tasks")
-def create_task(task: Task):
+def create_task(task: TaskCreate):
     result = supabase.table("tasks").insert(task.dict()).execute()
-    return result.data[0]
+    new_task = result.data[0]
+    
+    # Auto sync ke Google Calendar
+    try:
+        service = get_calendar_service()
+        if service:
+            calendar_id = os.getenv("GOOGLE_CALENDAR_ID", "primary")
+            from datetime import datetime
+            now = datetime.utcnow()
+            event = {
+                "summary": f"⏰ REMINDER: {new_task['title']}",
+                "description": f"Task baru!\nKategori: {new_task['category']}\nPrioritas: {new_task['priority']}",
+                "start": {"dateTime": now.strftime("%Y-%m-%dT08:00:00+07:00"), "timeZone": "Asia/Jakarta"},
+                "end": {"dateTime": now.strftime("%Y-%m-%dT08:30:00+07:00"), "timeZone": "Asia/Jakarta"},
+                "reminders": {
+                    "useDefault": False,
+                    "overrides": [
+                        {"method": "popup", "minutes": 0},
+                        {"method": "popup", "minutes": 30}
+                    ]
+                }
+            }
+            service.events().insert(calendarId=calendar_id, body=event).execute()
+    except:
+        pass  # Jangan gagalkan task creation kalau Calendar error
+    
+    return new_task
 
 # PATCH update status done
 @app.patch("/tasks/{task_id}/done")
@@ -121,3 +147,21 @@ def sync_tasks_to_calendar():
 @app.get("/calendar/remind-pending")
 def remind_pending_tasks():
     return sync_tasks_to_calendar()
+
+# ─── CRON JOB HARIAN ─────────────────────────────────────
+import threading
+import time
+
+def daily_calendar_sync():
+    while True:
+        now = datetime.utcnow()
+        # Sync tiap hari jam 01:00 UTC = 08:00 WIB
+        if now.hour == 1 and now.minute == 0:
+            try:
+                remind_pending_tasks()
+            except:
+                pass
+        time.sleep(60)  # cek tiap menit
+
+# Jalankan cron job di background
+threading.Thread(target=daily_calendar_sync, daemon=True).start()
