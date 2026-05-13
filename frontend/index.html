@@ -1222,18 +1222,21 @@ async function loadTasksFromAPI() {
     const data = await res.json();
     if (Array.isArray(data)) {
       tasks = data.map(t => ({
-        id: t.id,
-        text: t.title,
-        title: t.title,
-        type: t.task_type,
-        category: t.category,
-        done: t.is_done,
-        priority: t.priority,
-        role: t.role,
-        due_date: t.due_date,
-        date: t.due_date,
-        attachment: t.attachment || null
-      }));
+  id: t.id,
+  text: t.title,
+  title: t.title,
+  type: t.task_type,
+  category: t.category === 'Harian' ? 'daily' :
+            t.category === 'Mingguan' ? 'weekly' :
+            t.category === 'Bulanan' ? 'monthly' : t.category,
+  done: t.is_done,
+  priority: t.priority,
+  role: t.role === 'SPV' ? 'spv' :
+        t.role === 'Retail Assistant' ? 'ra' : 'semua',
+  due_date: t.due_date,
+  date: t.due_date,
+  attachment: t.attachment || null
+}));
       renderAll();
     }
   } catch(e) {
