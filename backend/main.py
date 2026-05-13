@@ -32,7 +32,7 @@ class Task(BaseModel):
     task_type: str = 'wajib'   # wajib / insidental
     description: Optional[str] = None
     due_date: Optional[date] = None
-    link: Optional[str] = None`n    attachment: Optional[dict] = None
+    link: Optional[str] = None
     attachment: Optional[dict] = None
 
 # GET semua task
