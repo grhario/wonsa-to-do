@@ -60,9 +60,9 @@ def get_tasks(category: Optional[str] = None, role: Optional[str] = None):
 @app.post("/tasks")
 def create_task(task: Task):
     data = task.dict()
-data.pop("attachment", None)
-if data.get("due_date"):
-    data["due_date"] = str(data["due_date"])
+    data.pop("attachment", None)
+    if data.get("due_date"):
+        data["due_date"] = str(data["due_date"])
     result = supabase.table("tasks").insert(data).execute()
     new_task = result.data[0]
     try:
