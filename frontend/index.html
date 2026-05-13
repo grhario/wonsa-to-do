@@ -10,525 +10,1077 @@
 <body>
 
 <!-- SIDEBAR -->
-<div id="sidebar">
-  <div class="sidebar-brand">
-    <div class="brand-logo">🏔️</div>
-    <div class="brand-name">Eiger Wonosari</div>
-    <div class="brand-sub">Store Management</div>
-  </div>
-
-  <div class="nav-section">
-    <div class="nav-label">Menu Utama</div>
-    <button class="nav-item" onclick="go(this,'dashboard')">
-      <i class="ti ti-layout-dashboard nav-icon"></i>
-      <span>Dashboard</span>
-    </button>
-    <button class="nav-item active" onclick="go(this,'closing')">
-      <i class="ti ti-moon nav-icon"></i>
-      <span>Closing Harian</span>
-      <span class="nav-badge" id="nb-pending">0</span>
-    </button>
-    <button class="nav-item" onclick="go(this,'daily')">
-      <i class="ti ti-sun nav-icon"></i>
-      <span>To-Do Harian</span>
-      <span class="nav-badge" id="nb-daily">0</span>
-    </button>
-    <button class="nav-item" onclick="go(this,'weekly')">
-      <i class="ti ti-calendar-week nav-icon"></i>
-      <span>Mingguan</span>
-    </button>
-    <button class="nav-item" onclick="go(this,'monthly')">
-      <i class="ti ti-calendar-month nav-icon"></i>
-      <span>Bulanan</span>
-    </button>
-  </div>
-
-  <div class="nav-section">
-    <div class="nav-label">Tim</div>
-    <button class="nav-item" onclick="go(this,'ra')">
-      <i class="ti ti-users nav-icon"></i>
-      <span>Retail Assistant</span>
-    </button>
-    <button class="nav-item" onclick="go(this,'spv')">
-      <i class="ti ti-shield-check nav-icon"></i>
-      <span>SPV / Storehead</span>
-    </button>
-  </div>
-
-  <div class="nav-section">
-    <div class="nav-label">Briefing</div>
-    <button class="nav-item" onclick="go(this,'mom')">
-      <i class="ti ti-notes nav-icon"></i>
-      <span>Template MOM</span>
-    </button>
-  </div>
-
-  <div class="sidebar-footer">
-    <button class="nav-item" onclick="go(this,'settings')">
-      <i class="ti ti-settings nav-icon"></i>
-      <span>Pengaturan</span>
-    </button>
-  </div>
-</div>
-
-<!-- MAIN -->
-<div id="main">
-
-  <!-- TOPBAR -->
-  <div id="topbar">
-    <div style="flex:1">
-      <div class="topbar-title" id="page-title">Closing Harian</div>
-      <div class="topbar-sub" id="page-sub">Memuat...</div>
+<aside id="sidebar">
+  <div class="sidebar-header">
+    <div class="brand">
+      <span class="brand-icon">🏔️</span>
+      <div class="brand-text">
+        <div class="brand-name">Eiger Wonosari</div>
+        <div class="brand-tagline">Store Management</div>
+      </div>
     </div>
-    <div class="topbar-actions">
-      <button class="btn btn-secondary btn-sm" onclick="openModal()">
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-group">
+      <span class="nav-label">Menu Utama</span>
+      <button class="nav-item" onclick="go('dashboard')" data-screen="dashboard">
+        <i class="ti ti-layout-dashboard"></i>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-item active" onclick="go('closing')" data-screen="closing">
+        <i class="ti ti-moon"></i>
+        <span>Closing Harian</span>
+        <span class="badge" id="badge-closing">0</span>
+      </button>
+      <button class="nav-item" onclick="go('daily')" data-screen="daily">
+        <i class="ti ti-checklist"></i>
+        <span>To-Do Harian</span>
+        <span class="badge" id="badge-daily">0</span>
+      </button>
+      <button class="nav-item" onclick="go('weekly')" data-screen="weekly">
+        <i class="ti ti-calendar-week"></i>
+        <span>Mingguan</span>
+      </button>
+      <button class="nav-item" onclick="go('monthly')" data-screen="monthly">
+        <i class="ti ti-calendar-month"></i>
+        <span>Bulanan</span>
+      </button>
+    </div>
+
+    <div class="nav-group">
+      <span class="nav-label">Tim</span>
+      <button class="nav-item" onclick="go('ra')" data-screen="ra">
+        <i class="ti ti-users"></i>
+        <span>Retail Assistant</span>
+      </button>
+      <button class="nav-item" onclick="go('spv')" data-screen="spv">
+        <i class="ti ti-shield-check"></i>
+        <span>SPV / Storehead</span>
+      </button>
+    </div>
+
+    <div class="nav-group">
+      <span class="nav-label">Lainnya</span>
+      <button class="nav-item" onclick="go('mom')" data-screen="mom">
+        <i class="ti ti-notes"></i>
+        <span>Template MOM</span>
+      </button>
+      <button class="nav-item" onclick="go('settings')" data-screen="settings">
+        <i class="ti ti-settings"></i>
+        <span>Pengaturan</span>
+      </button>
+    </div>
+  </nav>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main id="main">
+  <!-- Header -->
+  <header id="header">
+    <div class="header-title">
+      <h1 id="page-title">Closing Harian</h1>
+      <p id="page-subtitle">Memuat data...</p>
+    </div>
+    <div class="header-actions" id="header-actions">
+      <button class="btn btn-secondary" onclick="openModal()">
         <i class="ti ti-plus"></i> Tambah Task
       </button>
-      <button class="btn btn-wa btn-sm" onclick="sendWA()">
-        <i class="ti ti-brand-whatsapp"></i> Kirim Laporan WA
+      <button class="btn btn-primary" onclick="sendWA()">
+        <i class="ti ti-brand-whatsapp"></i> Kirim WA
       </button>
     </div>
-  </div>
+  </header>
 
-  <!-- CONTENT -->
+  <!-- Content Area -->
   <div id="content">
 
-    <!-- DASHBOARD -->
-    <div id="screen-dashboard" class="screen">
-      <div class="stats-grid">
-        <div class="stat-card green">
-          <div class="stat-label">Selesai Hari Ini</div>
-          <div class="stat-value" id="d-selesai">0</div>
-          <div class="progress-bar"><div class="progress-fill" id="d-prog" style="width:0%"></div></div>
+    <!-- DASHBOARD SCREEN -->
+    <section id="screen-dashboard" class="screen">
+      <div class="stats-row">
+        <div class="stat-box success">
+          <div class="stat-icon"><i class="ti ti-check-circle"></i></div>
+          <div class="stat-info">
+            <span class="stat-number" id="dash-done">0</span>
+            <span class="stat-label">Selesai Hari Ini</span>
+          </div>
         </div>
-        <div class="stat-card red">
-          <div class="stat-label">Belum Selesai</div>
-          <div class="stat-value" id="d-pending">0</div>
+        <div class="stat-box warning">
+          <div class="stat-icon"><i class="ti ti-clock"></i></div>
+          <div class="stat-info">
+            <span class="stat-number" id="dash-pending">0</span>
+            <span class="stat-label">Menunggu</span>
+          </div>
         </div>
-        <div class="stat-card amber">
-          <div class="stat-label">Task Wajib</div>
-          <div class="stat-value" id="d-wajib">0</div>
+        <div class="stat-box info">
+          <div class="stat-icon"><i class="ti ti-list-check"></i></div>
+          <div class="stat-info">
+            <span class="stat-number" id="dash-total">0</span>
+            <span class="stat-label">Total Task</span>
+          </div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Ringkasan Closing Hari Ini</div>
-          <button class="btn btn-wa btn-sm" onclick="go(document.querySelector('.nav-item.active'),'closing')">
-            <i class="ti ti-moon"></i> Buka Form Closing
+
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="card-header">
+            <h3>Ringkasan Closing</h3>
+            <button class="btn btn-text" onclick="go('closing')">Lihat Detail</button>
+          </div>
+          <div class="card-body" id="dash-closing-list">
+            <div class="empty-mini">Belum ada data closing</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Task Hari Ini</h3>
+            <button class="btn btn-text" onclick="go('daily')">Lihat Semua</button>
+          </div>
+          <div class="card-body" id="dash-daily-list">
+            <div class="empty-mini">Belum ada task</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLOSING SCREEN -->
+    <section id="screen-closing" class="screen active">
+      <div class="closing-header">
+        <div class="info-card">
+          <div class="info-icon"><i class="ti ti-moon"></i></div>
+          <div class="info-content">
+            <h3>Form Closing Harian</h3>
+            <p>Centang task yang sudah selesai</p>
+          </div>
+          <div class="info-time" id="clock-time">--:--</div>
+        </div>
+        <div class="info-card">
+          <div class="officer-input-wrapper">
+            <div class="officer-input-header">
+              <i class="ti ti-user-circle"></i>
+              <label>Nama Petugas Closing</label>
+            </div>
+            <div class="officer-input-field">
+              <i class="ti ti-user"></i>
+              <input type="text" id="officer-name" placeholder="Ketik nama petugas..." oninput="updateOfficer()"/>
+            </div>
+            <div class="officer-badge" id="officer-display">
+              <i class="ti ti-id-badge"></i>
+              <span>Belum diisi</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task-section">
+        <div class="section-header">
+          <h3>Task Wajib <span class="count" id="count-wajib">(0/0)</span></h3>
+          <button class="btn btn-sm btn-secondary" onclick="openModal('wajib')">
+            <i class="ti ti-plus"></i> Tambah
           </button>
         </div>
-        <div class="card-body" id="dash-list"></div>
-      </div>
-    </div>
-
-    <!-- CLOSING HARIAN -->
-    <div id="screen-closing" class="screen active">
-      <div class="closing-summary">
-        <div class="card" style="padding:20px;display:flex;align-items:center;gap:14px">
-          <div style="width:44px;height:44px;background:var(--green-mid);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <i class="ti ti-moon" style="color:#fff;font-size:22px"></i>
-          </div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:var(--text)">Form Closing Harian</div>
-            <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Centang selesai → kirim ke WA</div>
-          </div>
-          <div style="margin-left:auto;font-size:20px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green-mid)" id="close-clock">--:--</div>
-        </div>
-        <div class="card" style="padding:20px;display:flex;align-items:center;gap:10px">
-          <div style="flex:1">
-            <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Nama Petugas</div>
-            <input class="form-control" id="officer-name" placeholder="Ketik namamu..." oninput="refreshPreview()"/>
-          </div>
-          <div style="padding:6px 14px;background:var(--green-light);color:var(--green);border-radius:8px;font-size:13px;font-weight:700;white-space:nowrap;align-self:flex-end" id="officer-badge">—</div>
-        </div>
-      </div>
-
-      <div class="card" style="margin-bottom:16px">
-        <div class="card-header">
-          <div class="card-title">Task Wajib Harian <span style="font-weight:400;color:var(--text-light)" id="cnt-wajib"></span></div>
-          <button class="btn btn-secondary btn-sm" onclick="openModal('wajib')"><i class="ti ti-plus"></i> Tambah</button>
-        </div>
-        <div class="card-body" id="list-wajib">
-          <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Belum ada task wajib</div></div>
-        </div>
-      </div>
-
-      <div class="card" style="margin-bottom:16px">
-        <div class="card-header">
-          <div class="card-title">Tugas Insidental <span style="font-weight:400;color:var(--text-light)" id="cnt-insidental"></span></div>
-          <button class="btn btn-secondary btn-sm" onclick="openModal('insidental')"><i class="ti ti-plus"></i> Tambah</button>
-        </div>
-        <div class="card-body" id="list-insidental">
-          <div class="empty-state"><div class="empty-icon">📝</div><div class="empty-text">Belum ada tugas insidental</div></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title"><i class="ti ti-brand-whatsapp" style="color:#25d366"></i> Preview Laporan WA</div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-secondary btn-sm" onclick="copyMsg()"><i class="ti ti-copy"></i> Copy</button>
-            <button class="btn btn-wa btn-sm" onclick="sendWA()"><i class="ti ti-brand-whatsapp"></i> Kirim WA</button>
-          </div>
-        </div>
-        <div style="padding:16px">
-          <div class="wa-preview" id="wa-preview">—</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TO-DO HARIAN -->
-    <div id="screen-daily" class="screen">
-      <div class="card">
-        <div class="card-header"><div class="card-title">To-Do Harian</div></div>
-        <div class="card-body" id="list-daily"></div>
-      </div>
-    </div>
-
-    <!-- MINGGUAN -->
-    <div id="screen-weekly" class="screen">
-      <div class="card">
-        <div class="card-header"><div class="card-title">To-Do Mingguan</div></div>
-        <div class="card-body" id="list-weekly"></div>
-      </div>
-    </div>
-
-    <!-- BULANAN -->
-    <div id="screen-monthly" class="screen">
-      <div class="card">
-        <div class="card-header"><div class="card-title">To-Do Bulanan</div></div>
-        <div class="card-body" id="list-monthly"></div>
-      </div>
-    </div>
-
-    <!-- RETAIL ASSISTANT -->
-    <div id="screen-ra" class="screen">
-      <div class="card">
-        <div class="card-header"><div class="card-title">Task Retail Assistant</div></div>
-        <div class="card-body" id="list-ra"></div>
-      </div>
-    </div>
-
-    <!-- SPV -->
-    <div id="screen-spv" class="screen">
-      <div class="card">
-        <div class="card-header"><div class="card-title">Task SPV / Storehead</div></div>
-        <div class="card-body" id="list-spv"></div>
-      </div>
-    </div>
-
-    <!-- MOM -->
-    <div id="screen-mom" class="screen">
-      <div class="card">
-        <div class="card-header"><div class="card-title">Template MOM Briefing</div></div>
-        <div style="padding:20px">
-          <div class="mom-card">
-            <div class="mom-date" id="mom-date">—</div>
-            <div class="mom-agenda">Briefing Pagi Tim Eiger Wonosari</div>
-            <div class="mom-attendees">Agenda: Review target · Pembagian area · Update stok baru</div>
-            <div style="margin-top:10px;display:flex;gap:8px">
-              <button class="btn btn-wa btn-sm" onclick="toast('📲 MOM dikirim!')"><i class="ti ti-brand-whatsapp"></i> Kirim WA</button>
-            </div>
+        <div class="task-list" id="list-wajib">
+          <div class="empty-state">
+            <i class="ti ti-clipboard-list"></i>
+            <p>Belum ada task wajib</p>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- SETTINGS -->
-    <div id="screen-settings" class="screen">
-      <div class="card">
-        <div class="card-header"><div class="card-title">Pengaturan Reminder</div></div>
-        <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
-          <div class="form-group">
-            <label class="form-label">Nomor WhatsApp Grup Toko</label>
-            <div style="display:flex;gap:8px">
-              <input class="form-control" placeholder="Contoh: 6281234567890 (tanpa +)" style="flex:1"/>
-              <button class="btn btn-primary btn-sm" onclick="toast('✅ Nomor WA tersimpan!')"><i class="ti ti-check"></i> Simpan</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Waktu Reminder Otomatis Closing</label>
-            <div style="display:flex;gap:8px">
-              <select class="form-control" style="max-width:160px">
-                <option>17:30 WIB</option><option>18:00 WIB</option><option>18:30 WIB</option>
-              </select>
-              <button class="btn btn-primary btn-sm" onclick="toast('⏰ Reminder terjadwal!')"><i class="ti ti-alarm"></i> Aktifkan</button>
-            </div>
+      <div class="task-section">
+        <div class="section-header">
+          <h3>Tugas Insidental <span class="count" id="count-insidental">(0/0)</span></h3>
+          <button class="btn btn-sm btn-secondary" onclick="openModal('insidental')">
+            <i class="ti ti-plus"></i> Tambah
+          </button>
+        </div>
+        <div class="task-list" id="list-insidental">
+          <div class="empty-state">
+            <i class="ti ti-clipboard-plus"></i>
+            <p>Belum ada tugas insidental</p>
           </div>
         </div>
       </div>
-    </div>
 
-  </div><!-- end #content -->
-</div><!-- end #main -->
+      <div class="wa-section">
+        <div class="section-header">
+          <h3><i class="ti ti-brand-whatsapp"></i> Preview Laporan</h3>
+          <div class="btn-group">
+            <button class="btn btn-secondary" onclick="copyReport()">
+              <i class="ti ti-copy"></i> Copy
+            </button>
+            <button class="btn btn-primary" onclick="sendWA()">
+              <i class="ti ti-brand-whatsapp"></i> Kirim WA
+            </button>
+          </div>
+        </div>
+        <div class="wa-box" id="wa-preview">
+          Laporan akan muncul di sini...
+        </div>
+      </div>
+    </section>
 
-<!-- MODAL TAMBAH TASK -->
-<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
-  <div class="modal">
-    <div class="modal-title">Tambah Task Baru</div>
-    <div class="form-group">
-      <label class="form-label">Nama Task</label>
-      <input class="form-control" id="modal-task-name" placeholder="Contoh: Cek kebersihan toko..."/>
+    <!-- DAILY TODO SCREEN -->
+    <section id="screen-daily" class="screen">
+      <div class="page-header">
+        <p>Kelola semua task harian toko</p>
+        <button class="btn btn-primary" onclick="openModal()">
+          <i class="ti ti-plus"></i> Task Baru
+        </button>
+      </div>
+      <div class="card">
+        <div class="card-body" id="list-daily">
+          <div class="empty-state">
+            <i class="ti ti-checklist"></i>
+            <p>Tidak ada task untuk hari ini</p>
+            <button class="btn btn-secondary" onclick="openModal()">Buat Task Pertama</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WEEKLY SCREEN -->
+    <section id="screen-weekly" class="screen">
+      <div class="page-header">
+        <p>Task yang dilakukan setiap minggu</p>
+        <button class="btn btn-primary" onclick="openModal('weekly')">
+          <i class="ti ti-plus"></i> Task Mingguan
+        </button>
+      </div>
+      <div class="card">
+        <div class="card-body" id="list-weekly">
+          <div class="empty-state">
+            <i class="ti ti-calendar-week"></i>
+            <p>Belum ada task mingguan</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MONTHLY SCREEN -->
+    <section id="screen-monthly" class="screen">
+      <div class="page-header">
+        <p>Task yang dilakukan setiap bulan</p>
+        <button class="btn btn-primary" onclick="openModal('monthly')">
+          <i class="ti ti-plus"></i> Task Bulanan
+        </button>
+      </div>
+      <div class="card">
+        <div class="card-body" id="list-monthly">
+          <div class="empty-state">
+            <i class="ti ti-calendar-month"></i>
+            <p>Belum ada task bulanan</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RA SCREEN -->
+    <section id="screen-ra" class="screen">
+      <div class="page-header">
+        <p>Task khusus Retail Assistant</p>
+        <button class="btn btn-primary" onclick="openModal('ra')">
+          <i class="ti ti-plus"></i> Task RA
+        </button>
+      </div>
+      <div class="card">
+        <div class="card-body" id="list-ra">
+          <div class="empty-state">
+            <i class="ti ti-users"></i>
+            <p>Belum ada task untuk Retail Assistant</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SPV SCREEN -->
+    <section id="screen-spv" class="screen">
+      <div class="page-header">
+        <p>Task khusus Supervisor dan Storehead</p>
+        <button class="btn btn-primary" onclick="openModal('spv')">
+          <i class="ti ti-plus"></i> Task SPV
+        </button>
+      </div>
+      <div class="card">
+        <div class="card-body" id="list-spv">
+          <div class="empty-state">
+            <i class="ti ti-shield-check"></i>
+            <p>Belum ada task untuk SPV</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MOM SCREEN -->
+    <section id="screen-mom" class="screen">
+      <div class="page-header">
+        <p>Template Minutes of Meeting untuk briefing</p>
+      </div>
+      <div class="mom-grid">
+        <div class="card mom-card">
+          <div class="mom-header">
+            <div class="mom-date" id="mom-today">-</div>
+            <span class="mom-type">Briefing Pagi</span>
+          </div>
+          <h4 class="mom-title">Briefing Tim Eiger Wonosari</h4>
+          <ul class="mom-list">
+            <li>Review target harian</li>
+            <li>Pembagian area kerja</li>
+            <li>Update stok baru</li>
+            <li>Informasi promo</li>
+          </ul>
+          <div class="mom-actions">
+            <button class="btn btn-primary" onclick="sendMOM('pagi')">
+              <i class="ti ti-brand-whatsapp"></i> Kirim MOM
+            </button>
+          </div>
+        </div>
+
+        <div class="card mom-card">
+          <div class="mom-header">
+            <div class="mom-date" id="mom-today-2">-</div>
+            <span class="mom-type">Closing</span>
+          </div>
+          <h4 class="mom-title">Rapat Closing Harian</h4>
+          <ul class="mom-list">
+            <li>Review penjualan hari ini</li>
+            <li>Permasalahan yang dihadapi</li>
+            <li>Target besok</li>
+            <li>Catatan penting</li>
+          </ul>
+          <div class="mom-actions">
+            <button class="btn btn-primary" onclick="sendMOM('closing')">
+              <i class="ti ti-brand-whatsapp"></i> Kirim MOM
+            </button>
+          </div>
+        </div>
+
+        <div class="card mom-card">
+          <div class="mom-header">
+            <div class="mom-date" id="mom-week">-</div>
+            <span class="mom-type">Mingguan</span>
+          </div>
+          <h4 class="mom-title">Evaluasi Mingguan</h4>
+          <ul class="mom-list">
+            <li>Capaian target minggu ini</li>
+            <li>Best performer</li>
+            <li>Area improvement</li>
+            <li>Rencana minggu depan</li>
+          </ul>
+          <div class="mom-actions">
+            <button class="btn btn-primary" onclick="sendMOM('mingguan')">
+              <i class="ti ti-brand-whatsapp"></i> Kirim MOM
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS SCREEN -->
+    <section id="screen-settings" class="screen">
+      <div class="settings-grid">
+        <div class="card settings-card">
+          <div class="settings-icon"><i class="ti ti-brand-whatsapp"></i></div>
+          <h3>WhatsApp Grup</h3>
+          <p>Nomor WA grup toko untuk laporan</p>
+          <div class="settings-form">
+            <input type="text" class="form-control" id="wa-number" placeholder="6281234567890"/>
+            <button class="btn btn-secondary" onclick="saveSetting('wa')">Simpan</button>
+          </div>
+        </div>
+
+        <div class="card settings-card">
+          <div class="settings-icon"><i class="ti ti-bell"></i></div>
+          <h3>Reminder Closing</h3>
+          <p>Waktu pengingat closing otomatis</p>
+          <div class="settings-form">
+            <select class="form-control" id="reminder-time">
+              <option value="17:30">17:30 WIB</option>
+              <option value="18:00">18:00 WIB</option>
+              <option value="18:30">18:30 WIB</option>
+              <option value="19:00">19:00 WIB</option>
+            </select>
+            <button class="btn btn-secondary" onclick="saveSetting('reminder')">Simpan</button>
+          </div>
+        </div>
+
+        <div class="card settings-card">
+          <div class="settings-icon"><i class="ti ti-user"></i></div>
+          <h3>Nama Default</h3>
+          <p>Nama petugas default untuk laporan</p>
+          <div class="settings-form">
+            <input type="text" class="form-control" id="default-name" placeholder="Nama petugas"/>
+            <button class="btn btn-secondary" onclick="saveSetting('name')">Simpan</button>
+          </div>
+        </div>
+
+        <div class="card settings-card">
+          <div class="settings-icon"><i class="ti ti-database"></i></div>
+          <h3>Data</h3>
+          <p>Kelola data aplikasi</p>
+          <div class="settings-actions">
+            <button class="btn btn-secondary" onclick="exportData()">
+              <i class="ti ti-download"></i> Export
+            </button>
+            <button class="btn btn-danger" onclick="clearAllData()">
+              <i class="ti ti-trash"></i> Hapus Semua
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Tambah Task Baru</h3>
+      <button class="btn-icon" onclick="closeModal()"><i class="ti ti-x"></i></button>
     </div>
-    <div class="form-row">
+    <div class="modal-body">
       <div class="form-group">
-        <label class="form-label">Tipe</label>
-        <select class="form-control" id="modal-task-type">
-          <option value="harian">Harian Wajib</option>
-          <option value="insidental">Insidental</option>
-        </select>
+        <label>Nama Task</label>
+        <input type="text" class="form-control" id="modal-task" placeholder="Contoh: Cek kebersihan toko"/>
       </div>
-      <div class="form-group">
-        <label class="form-label">Prioritas</label>
-        <select class="form-control" id="modal-task-priority">
-          <option value="Tinggi">Tinggi</option>
-          <option value="Sedang" selected>Sedang</option>
-          <option value="Rendah">Rendah</option>
-        </select>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Kategori</label>
+          <select class="form-control" id="modal-category">
+            <option value="wajib">Wajib Harian</option>
+            <option value="insidental">Insidental</option>
+            <option value="weekly">Mingguan</option>
+            <option value="monthly">Bulanan</option>
+            <option value="ra">Retail Assistant</option>
+            <option value="spv">SPV</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prioritas</label>
+          <select class="form-control" id="modal-priority">
+            <option value="tinggi">Tinggi</option>
+            <option value="sedang" selected>Sedang</option>
+            <option value="rendah">Rendah</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- Attachment Section -->
+      <div class="attachment-section">
+        <label class="attachment-label">
+          <i class="ti ti-paperclip"></i> Lampiran (Opsional)
+        </label>
+        
+        <!-- Attachment Type Toggle -->
+        <div class="attachment-type-toggle">
+          <button type="button" class="attachment-type-btn active" onclick="setAttachmentType('link')" id="btn-attachment-link">
+            <i class="ti ti-link"></i> Link
+          </button>
+          <button type="button" class="attachment-type-btn" onclick="setAttachmentType('file')" id="btn-attachment-file">
+            <i class="ti ti-file-upload"></i> File
+          </button>
+        </div>
+        
+        <!-- Link Input -->
+        <div class="attachment-input-wrapper" id="attachment-link-wrapper">
+          <div class="input-with-icon">
+            <i class="ti ti-link"></i>
+            <input type="url" class="form-control" id="modal-attachment-link" placeholder="https://example.com atau Google Drive link..."/>
+          </div>
+          <span class="attachment-hint">Paste link Google Form, Drive, atau link lainnya</span>
+        </div>
+        
+        <!-- File Input -->
+        <div class="attachment-input-wrapper hidden" id="attachment-file-wrapper">
+          <div class="file-upload-area" onclick="document.getElementById('modal-attachment-file').click()">
+            <input type="file" id="modal-attachment-file" hidden accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.mp4,.zip,.rar" onchange="handleFileSelect(this)"/>
+            <i class="ti ti-cloud-upload"></i>
+            <span class="file-upload-text">Klik untuk upload file</span>
+            <span class="file-upload-hint">PDF, Word, Excel, Gambar, Video (Max 10MB)</span>
+          </div>
+          <div class="file-selected hidden" id="file-selected-info">
+            <i class="ti ti-file-check"></i>
+            <span class="file-name" id="selected-file-name">No file selected</span>
+            <button type="button" class="btn-icon file-remove" onclick="removeSelectedFile()">
+              <i class="ti ti-x"></i>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="form-actions">
+    <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal()">Batal</button>
-      <button class="btn btn-primary" onclick="addNewTask()"><i class="ti ti-plus"></i> Tambah Task</button>
+      <button class="btn btn-primary" onclick="addTask()">Tambah Task</button>
     </div>
   </div>
 </div>
 
 <!-- TOAST -->
-<div class="toast" id="toast-el"><span id="toast-msg"></span></div>
+<div class="toast" id="toast">
+  <i class="ti ti-check"></i>
+  <span id="toast-msg">Berhasil!</span>
+</div>
 
 <script>
-const API = 'https://wonsa-to-do-production.up.railway.app'
+// API URL
+const API = 'https://wonsa-to-do-production.up.railway.app';
 
-// Tanggal otomatis
-const todayDate = new Date();
-const todayStr  = todayDate.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-document.getElementById('page-sub').textContent  = todayStr + ' · Eiger Wonosari';
-document.getElementById('mom-date').textContent  = todayStr;
+// State
+let tasks = [];
+let currentScreen = 'closing';
+
+// Date setup
+const today = new Date();
+const dateStr = today.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+document.getElementById('page-subtitle').textContent = dateStr;
+document.getElementById('mom-today').textContent = dateStr;
+document.getElementById('mom-today-2').textContent = dateStr;
+document.getElementById('mom-week').textContent = 'Minggu ' + getWeekNumber(today);
+
+function getWeekNumber(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+}
 
 const titles = {
-  dashboard:'Dashboard', closing:'Closing Harian', daily:'To-Do Harian',
-  weekly:'To-Do Mingguan', monthly:'To-Do Bulanan',
-  ra:'Retail Assistant', spv:'SPV / Storehead',
-  mom:'Template MOM', settings:'Pengaturan'
+  dashboard: 'Dashboard',
+  closing: 'Closing Harian',
+  daily: 'To-Do Harian',
+  weekly: 'Task Mingguan',
+  monthly: 'Task Bulanan',
+  ra: 'Retail Assistant',
+  spv: 'SPV / Storehead',
+  mom: 'Template MOM',
+  settings: 'Pengaturan'
 };
 
-let tasks = [];
+// Navigation
+function go(screen) {
+  currentScreen = screen;
+  
+  // Update sidebar
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.screen === screen);
+  });
+  
+  // Update screens
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  
+  // Update header
+  document.getElementById('page-title').textContent = titles[screen] || screen;
+  
+  // Show/hide header actions
+  const actions = document.getElementById('header-actions');
+  if (screen === 'closing' || screen === 'daily') {
+    actions.style.display = 'flex';
+  } else if (screen === 'weekly' || screen === 'monthly' || screen === 'ra' || screen === 'spv') {
+    actions.style.display = 'flex';
+  } else {
+    actions.style.display = 'none';
+  }
+  
+  renderAll();
+}
 
-// ── LOAD DARI API ──
+// Load tasks
 async function loadTasks() {
   try {
     const res = await fetch(`${API}/tasks`);
     if (!res.ok) throw new Error();
-    const raw = await res.json();
-    tasks = raw.map(t => ({
-      id:       t.id,
-      text:     t.title,
-      type:     t.task_type || 'wajib',
-      done:     t.is_done ?? false,
-      priority: t.priority || 'Sedang',
-      role:     t.role,
+    const data = await res.json();
+    tasks = data.map(t => ({
+      id: t.id,
+      text: t.title,
+      type: t.task_type || 'wajib',
+      category: t.category || 'daily',
+      done: t.is_done || false,
+      priority: t.priority || 'sedang',
+      role: t.role || 'semua',
+      attachment: t.attachment || null
     }));
     renderAll();
-  } catch(e) {
-    toast('⚠️ Gagal load data — cek backend & Supabase', true);
-    console.error(e);
+  } catch (e) {
+    console.log('API not available, using local data');
+    tasks = getDefaultTasks();
+    renderAll();
   }
 }
 
-// ── TAMBAH TASK ──
-async function addNewTask() {
-  const txt = document.getElementById('modal-task-name').value.trim();
-  if (!txt) { toast('⚠️ Tulis dulu nama task-nya!', true); return; }
-  const typeVal    = document.getElementById('modal-task-type').value;
-  const priorityVal = document.getElementById('modal-task-priority').value;
- const body = {
-    title:     txt,
-    category:  'Harian',
-    task_type: typeVal === 'harian' ? 'wajib' : 'insidental',
-    role:      'Semua',
-    priority:  priorityVal,
-};
-  try {
-    const res = await fetch(`${API}/tasks`, {
-      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error();
-    closeModal();
-    toast('✅ Task ditambahkan!');
-    await loadTasks();
-  } catch { toast('❌ Gagal tambah task', true); }
+function getDefaultTasks() {
+  return [
+    { id: '1', text: 'Cek kebersihan toko', type: 'wajib', category: 'daily', done: false, priority: 'tinggi', role: 'semua', attachment: null },
+    { id: '2', text: 'Display produk utama', type: 'wajib', category: 'daily', done: false, priority: 'sedang', role: 'semua', attachment: null },
+    { id: '3', text: 'Update stok habis', type: 'insidental', category: 'daily', done: false, priority: 'sedang', role: 'semua', attachment: { type: 'link', url: 'https://docs.google.com/forms/d/example', name: 'google.com' } },
+    { id: '4', text: 'Cleaning rak mingguan', type: 'wajib', category: 'weekly', done: false, priority: 'rendah', role: 'ra', attachment: null },
+    { id: '5', text: 'Review performa tim', type: 'wajib', category: 'weekly', done: false, priority: 'tinggi', role: 'spv', attachment: null }
+  ];
 }
 
-// ── TOGGLE DONE ──
-async function toggle(id) {
-  const t = tasks.find(x => x.id === id);
-  if (!t) return;
-  try {
-    const res = await fetch(`${API}/tasks/${id}/done?is_done=${!t.done}`, { method:'PATCH' });
-    if (!res.ok) throw new Error();
-    await loadTasks();
-  } catch { toast('❌ Gagal update status', true); }
+// Render functions
+function renderAll() {
+  const wajib = tasks.filter(t => t.type === 'wajib');
+  const insidental = tasks.filter(t => t.type === 'insidental');
+  const daily = tasks.filter(t => t.category === 'daily' || !t.category);
+  const weekly = tasks.filter(t => t.category === 'weekly');
+  const monthly = tasks.filter(t => t.category === 'monthly');
+  const ra = tasks.filter(t => t.role === 'ra' || t.category === 'ra');
+  const spv = tasks.filter(t => t.role === 'spv' || t.category === 'spv');
+  
+  const done = tasks.filter(t => t.done).length;
+  const pending = tasks.filter(t => !t.done).length;
+  
+  // Dashboard stats
+  document.getElementById('dash-done').textContent = done;
+  document.getElementById('dash-pending').textContent = pending;
+  document.getElementById('dash-total').textContent = tasks.length;
+  
+  // Badges
+  document.getElementById('badge-closing').textContent = pending;
+  document.getElementById('badge-daily').textContent = daily.length;
+  
+  // Counts
+  document.getElementById('count-wajib').textContent = `(${wajib.filter(t => t.done).length}/${wajib.length})`;
+  document.getElementById('count-insidental').textContent = `(${insidental.filter(t => t.done).length}/${insidental.length})`;
+  
+  // Render lists
+  renderList('list-wajib', wajib);
+  renderList('list-insidental', insidental);
+  renderList('list-daily', daily);
+  renderList('list-weekly', weekly);
+  renderList('list-monthly', monthly);
+  renderList('list-ra', ra);
+  renderList('list-spv', spv);
+  
+  // Dashboard lists
+  renderMiniList('dash-closing-list', [...wajib.slice(0, 3), ...insidental.slice(0, 2)]);
+  renderMiniList('dash-daily-list', daily.slice(0, 5));
+  
+  // Update WA preview
+  updateWAReport();
 }
 
-// ── HAPUS TASK ──
-async function removeTask(id) {
-  try {
-    const res = await fetch(`${API}/tasks/${id}`, { method:'DELETE' });
-    if (!res.ok) throw new Error();
-    toast('🗑 Task dihapus');
-    await loadTasks();
-  } catch { toast('❌ Gagal hapus task', true); }
+function renderList(id, list) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  
+  if (list.length === 0) {
+    el.innerHTML = `<div class="empty-state"><i class="ti ti-inbox"></i><p>Tidak ada task</p></div>`;
+    return;
+  }
+  
+  el.innerHTML = list.map(t => `
+    <div class="task-row ${t.done ? 'done' : ''}">
+      <label class="task-checkbox">
+        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask('${t.id}')">
+        <span class="checkmark"></span>
+      </label>
+      <div class="task-content-wrapper">
+        <div class="task-content">
+          <span class="task-name">
+            ${t.text}
+            ${t.attachment ? `<span class="attachment-indicator"><i class="ti ti-paperclip"></i></span>` : ''}
+          </span>
+          <span class="task-priority ${t.priority}">${t.priority}</span>
+        </div>
+        ${t.attachment ? renderAttachmentHTML(t.attachment) : ''}
+      </div>
+      <button class="btn-icon btn-delete" onclick="deleteTask('${t.id}')"><i class="ti ti-trash"></i></button>
+    </div>
+  `).join('');
 }
 
-// ── NAVIGASI ──
-function go(el, screen) {
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  if (el) el.classList.add('active');
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const s = document.getElementById('screen-' + screen);
-  if (s) s.classList.add('active');
-  document.getElementById('page-title').textContent = titles[screen] || screen;
+function renderAttachmentHTML(attachment) {
+  if (attachment.type === 'link') {
+    return `
+      <div class="task-attachments">
+        <a href="${attachment.url}" target="_blank" rel="noopener" class="task-attachment">
+          <i class="ti ti-external-link"></i>
+          <span>${attachment.name}</span>
+        </a>
+      </div>
+    `;
+  } else if (attachment.type === 'file') {
+    return `
+      <div class="task-attachments">
+        <a href="${attachment.data}" download="${attachment.name}" class="task-attachment attachment-file">
+          <i class="ti ti-file-download"></i>
+          <span>${attachment.name} (${attachment.size})</span>
+        </a>
+      </div>
+    `;
+  }
+  return '';
+}
+
+function renderMiniList(id, list) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  
+  if (list.length === 0) {
+    el.innerHTML = '<div class="empty-mini">Tidak ada data</div>';
+    return;
+  }
+  
+  el.innerHTML = list.map(t => `
+    <div class="mini-task ${t.done ? 'done' : ''}">
+      <i class="ti ti-${t.done ? 'check-circle' : 'circle'}"></i>
+      <span>${t.text}</span>
+    </div>
+  `).join('');
+}
+
+// Task actions
+async function toggleTask(id) {
+  const task = tasks.find(t => t.id === id);
+  if (!task) return;
+  
+  task.done = !task.done;
+  
+  try {
+    await fetch(`${API}/tasks/${id}/done?is_done=${task.done}`, { method: 'PATCH' });
+  } catch (e) {
+    console.log('API update failed, using local');
+  }
+  
   renderAll();
 }
-// ── MODAL ──
-function openModal(type) {
-  if (type) document.getElementById('modal-task-type').value = type;
-  document.getElementById('modal-overlay').classList.add('open');
-  setTimeout(() => document.getElementById('modal-task-name').focus(), 100);
-}
-function closeModal(e) {
-  if (e && e.target !== document.getElementById('modal-overlay')) return;
-  document.getElementById('modal-overlay').classList.remove('open');
-  document.getElementById('modal-task-name').value = '';
-}
 
-// ── RENDER TASK ROW ──
-function mkRow(t) {
-  const priorityTag = t.priority === 'Tinggi'
-    ? `<span class="tag tag-tinggi">Tinggi</span>`
-    : t.priority === 'Rendah'
-    ? `<span class="tag tag-rendah">Rendah</span>`
-    : `<span class="tag tag-sedang">Sedang</span>`;
-  const statusTag = t.done
-    ? `<span class="tag tag-done">Selesai</span>`
-    : `<span class="tag tag-pending">Pending</span>`;
-  return `<div class="task-item">
-    <div class="task-check ${t.done?'done':''}" onclick="toggle('${t.id}')"></div>
-    <div class="task-name ${t.done?'done':''}">${t.text}</div>
-    <div class="task-tags">
-      ${priorityTag}${statusTag}
-      <div class="task-actions">
-        <button class="btn btn-wa btn-sm" onclick="go(document.querySelector('.nav-item.active'),'closing');setTimeout(sendWA,300)">
-        <i class="ti ti-brand-whatsapp"></i> Kirim Laporan WA
-      </button>
-      </div>
-    </div>
-  </div>`;
-}
-
-// ── PREVIEW WA ──
-function refreshPreview() {
-  const name = document.getElementById('officer-name').value.trim() || 'Petugas';
-  document.getElementById('officer-badge').textContent = name;
-  const wajibPending      = tasks.filter(t => !t.done && t.type==='wajib');
-  const insidentalPending = tasks.filter(t => !t.done && t.type==='insidental');
-  const done  = tasks.filter(t => t.done).length;
-  const total = tasks.length;
-  const hariIni = new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
-  const jam = `${String(new Date().getHours()).padStart(2,'0')}:${String(new Date().getMinutes()).padStart(2,'0')}`;
-  let msg = `📋 *LAPORAN CLOSING HARIAN*\n🏪 Eiger Wonosari — ${hariIni}\n👤 Petugas: ${name}\n⏰ Waktu closing: ${jam} WIB\n\n✅ Selesai: ${done}/${total} task\n`;
-  if (wajibPending.length > 0) {
-    msg += `\n🔴 *TASK WAJIB BELUM SELESAI (${wajibPending.length}):*\n`;
-    wajibPending.forEach((t,i) => { msg += `${i+1}. ${t.text}\n`; });
-  } else { msg += `\n✅ Semua task wajib sudah selesai!\n`; }
-  if (insidentalPending.length > 0) {
-    msg += `\n🟡 *TUGAS INSIDENTAL BELUM SELESAI (${insidentalPending.length}):*\n`;
-    insidentalPending.forEach((t,i) => { msg += `${i+1}. ${t.text}\n`; });
+async function deleteTask(id) {
+  if (!confirm('Hapus task ini?')) return;
+  
+  tasks = tasks.filter(t => t.id !== id);
+  
+  try {
+    await fetch(`${API}/tasks/${id}`, { method: 'DELETE' });
+  } catch (e) {
+    console.log('API delete failed, using local');
   }
-  msg += `\n_Laporan dikirim otomatis via Eiger Task Manager_`;
-  document.getElementById('wa-preview').textContent = msg;
-  return msg;
+  
+  renderAll();
+  showToast('Task dihapus');
 }
 
-// ── RENDER SEMUA ──
-function renderAll() {
-  const wajib      = tasks.filter(t => t.type==='wajib');
-  const insidental = tasks.filter(t => t.type==='insidental');
-  const pending    = tasks.filter(t => !t.done);
-  const done       = tasks.filter(t => t.done).length;
-
-  const set = (id, html) => { const el=document.getElementById(id); if(el) el.innerHTML=html||''; };
-  const empty = msg => `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">${msg}</div></div>`;
-
-  set('list-wajib',      wajib.map(mkRow).join('')      || empty('Belum ada task wajib'));
-  set('list-insidental', insidental.map(mkRow).join('') || empty('Belum ada tugas insidental'));
-  set('cnt-wajib',       `(${wajib.filter(t=>t.done).length}/${wajib.length} selesai)`);
-  set('cnt-insidental',  `(${insidental.filter(t=>t.done).length}/${insidental.length} selesai)`);
-  set('d-selesai', done);
-  set('d-pending', pending.length);
-  set('d-wajib',   wajib.length);
-  set('nb-pending', pending.length);
-  set('nb-daily',   tasks.length);
-
-  const prog = document.getElementById('d-prog');
-  if (prog) prog.style.width = (tasks.length>0 ? Math.round(done/tasks.length*100) : 0)+'%';
-
-  const dash = document.getElementById('dash-list');
-  if (dash) dash.innerHTML = tasks.slice(0,5).map(mkRow).join('') || empty('Tidak ada task hari ini');
-
-  refreshPreview();
-
-  set('list-daily',   tasks.map(mkRow).join('')  || empty('Tidak ada task'));
-  set('list-weekly',  wajib.map(mkRow).join('')  || empty('Tidak ada task mingguan'));
-  set('list-ra',      tasks.filter((_,i)=>i%2===0).map(mkRow).join('') || empty('Tidak ada task RA'));
-  set('list-spv',     wajib.map(mkRow).join('')  || empty('Tidak ada task SPV'));
-  set('list-monthly', insidental.map(mkRow).join('') || empty('Tidak ada task bulanan'));
+async function addTask() {
+  const text = document.getElementById('modal-task').value.trim();
+  const category = document.getElementById('modal-category').value;
+  const priority = document.getElementById('modal-priority').value;
+  
+  if (!text) {
+    showToast('Isi nama task terlebih dahulu', 'error');
+    return;
+  }
+  
+  // Get attachment info
+  const attachmentType = document.querySelector('.attachment-type-btn.active').dataset.type;
+  let attachment = null;
+  
+  if (attachmentType === 'link') {
+    const linkUrl = document.getElementById('modal-attachment-link').value.trim();
+    if (linkUrl) {
+      attachment = {
+        type: 'link',
+        url: linkUrl,
+        name: extractDomainName(linkUrl)
+      };
+    }
+  } else if (attachmentType === 'file') {
+    const fileInput = document.getElementById('modal-attachment-file');
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      const fileData = await readFileAsDataURL(file);
+      attachment = {
+        type: 'file',
+        name: file.name,
+        size: formatFileSize(file.size),
+        data: fileData,
+        mimeType: file.type
+      };
+    }
+  }
+  
+  const newTask = {
+    id: Date.now().toString(),
+    text: text,
+    type: category === 'wajib' ? 'wajib' : 'insidental',
+    category: category,
+    done: false,
+    priority: priority,
+    role: category === 'ra' ? 'ra' : category === 'spv' ? 'spv' : 'semua',
+    attachment: attachment
+  };
+  
+  try {
+    await fetch(`${API}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: text,
+        category: category,
+        task_type: newTask.type,
+        priority: priority,
+        role: newTask.role,
+        attachment: attachment
+      })
+    });
+  } catch (e) {
+    console.log('API add failed, using local');
+  }
+  
+  tasks.push(newTask);
+  closeModal();
+  resetAttachmentForm();
+  renderAll();
+  showToast('Task ditambahkan');
 }
 
-// ── KIRIM WA ──
+// Helper function to extract domain name from URL
+function extractDomainName(url) {
+  try {
+    const domain = new URL(url).hostname.replace('www.', '');
+    return domain;
+  } catch {
+    return 'Link';
+  }
+}
+
+// Helper function to read file as Data URL
+function readFileAsDataURL(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+// Helper function to format file size
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+// Attachment type toggle
+function setAttachmentType(type) {
+  // Update buttons
+  document.querySelectorAll('.attachment-type-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  document.getElementById(`btn-attachment-${type}`).classList.add('active');
+  document.getElementById(`btn-attachment-${type}`).dataset.type = type;
+  
+  // Show/hide appropriate input
+  document.getElementById('attachment-link-wrapper').classList.toggle('hidden', type !== 'link');
+  document.getElementById('attachment-file-wrapper').classList.toggle('hidden', type !== 'file');
+}
+
+// Handle file selection
+function handleFileSelect(input) {
+  if (input.files.length > 0) {
+    const file = input.files[0];
+    document.getElementById('selected-file-name').textContent = file.name;
+    document.getElementById('file-selected-info').classList.remove('hidden');
+  }
+}
+
+// Remove selected file
+function removeSelectedFile() {
+  document.getElementById('modal-attachment-file').value = '';
+  document.getElementById('file-selected-info').classList.add('hidden');
+}
+
+// Reset attachment form
+function resetAttachmentForm() {
+  document.getElementById('modal-attachment-link').value = '';
+  document.getElementById('modal-attachment-file').value = '';
+  document.getElementById('file-selected-info').classList.add('hidden');
+  setAttachmentType('link');
+}
+
+// Modal
+function openModal(type) {
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('modal-task').value = '';
+  if (type) document.getElementById('modal-category').value = type;
+  resetAttachmentForm();
+  document.getElementById('modal-task').focus();
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  resetAttachmentForm();
+}
+
+// WA Report
+function updateOfficer() {
+  const name = document.getElementById('officer-name').value.trim();
+  const badge = document.getElementById('officer-display');
+  
+  if (name) {
+    badge.innerHTML = `<i class="ti ti-user-check"></i><span>${name}</span>`;
+    badge.classList.add('has-value');
+  } else {
+    badge.innerHTML = `<i class="ti ti-id-badge"></i><span>Belum diisi</span>`;
+    badge.classList.remove('has-value');
+  }
+  
+  updateWAReport();
+}
+
+function updateWAReport() {
+  const name = document.getElementById('officer-name').value.trim() || 'Petugas';
+  const wajib = tasks.filter(t => t.type === 'wajib');
+  const insidental = tasks.filter(t => t.type === 'insidental');
+  const wajibDone = wajib.filter(t => t.done).length;
+  const insDone = insidental.filter(t => t.done).length;
+  const wajibPending = wajib.filter(t => !t.done);
+  const insPending = insidental.filter(t => !t.done);
+  
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const date = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  
+  let report = `📋 *LAPORAN CLOSING HARIAN*\n`;
+  report += `🏪 Eiger Wonosari — ${date}\n`;
+  report += `👤 Petugas: ${name}\n`;
+  report += `⏰ Waktu: ${time} WIB\n\n`;
+  report += `✅ Task Wajib: ${wajibDone}/${wajib.length}\n`;
+  report += `✅ Insidental: ${insDone}/${insidental.length}\n\n`;
+  
+  if (wajibPending.length > 0) {
+    report += `🔴 *Belum Selesai:*\n`;
+    wajibPending.forEach((t, i) => report += `${i+1}. ${t.text}\n`);
+    report += '\n';
+  }
+  
+  if (insPending.length > 0) {
+    report += `🟡 *Insidental Pending:*\n`;
+    insPending.forEach((t, i) => report += `${i+1}. ${t.text}\n`);
+  }
+  
+  if (wajibPending.length === 0 && insPending.length === 0) {
+    report += `🎉 Semua task sudah selesai!`;
+  }
+  
+  document.getElementById('wa-preview').textContent = report;
+}
+
 function sendWA() {
-  const msg = refreshPreview();
-  const enc = encodeURIComponent(msg);
-  const url = `https://wa.me/?text=${enc}`;
-  toast('📲 Membuka WhatsApp...');
+  const report = document.getElementById('wa-preview').textContent;
+  const url = `https://wa.me/?text=${encodeURIComponent(report)}`;
+  window.open(url, '_blank');
+  showToast('Membuka WhatsApp...');
+}
+
+function copyReport() {
+  const report = document.getElementById('wa-preview').textContent;
+  navigator.clipboard.writeText(report).then(() => {
+    showToast('Laporan dicopy!');
+  });
+}
+
+function sendMOM(type) {
+  const date = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  let mom = '';
+  
+  if (type === 'pagi') {
+    mom = `📋 *MOM BRIEFING PAGI*\n🏪 Eiger Wonosari\n📅 ${date}\n\nAgenda:\n• Review target harian\n• Pembagian area kerja\n• Update stok baru\n• Informasi promo\n\n_Catatan: Tambahkan hasil briefing di sini_`;
+  } else if (type === 'closing') {
+    mom = `📋 *MOM CLOSING*\n🏪 Eiger Wonosari\n📅 ${date}\n\nAgenda:\n• Review penjualan hari ini\n• Permasalahan yang dihadapi\n• Target besok\n• Catatan penting\n\n_Catatan: Tambahkan hasil rapat di sini_`;
+  } else {
+    mom = `📋 *MOM EVALUASI MINGGUAN*\n🏪 Eiger Wonosari\n📅 Minggu ${getWeekNumber(new Date())}\n\nAgenda:\n• Capaian target minggu ini\n• Best performer\n• Area improvement\n• Rencana minggu depan\n\n_Catatan: Tambahkan hasil evaluasi di sini_`;
+  }
+  
+  const url = `https://wa.me/?text=${encodeURIComponent(mom)}`;
+  window.open(url, '_blank');
+  showToast('MOM dikirim!');
+}
+
+// Settings
+function saveSetting(type) {
+  if (type === 'wa') {
+    const num = document.getElementById('wa-number').value;
+    localStorage.setItem('wa-number', num);
+  } else if (type === 'reminder') {
+    const time = document.getElementById('reminder-time').value;
+    localStorage.setItem('reminder-time', time);
+  } else if (type === 'name') {
+    const name = document.getElementById('default-name').value;
+    localStorage.setItem('default-name', name);
+    document.getElementById('officer-name').value = name;
+    updateOfficer();
+  }
+  showToast('Pengaturan tersimpan');
+}
+
+function exportData() {
+  const data = JSON.stringify(tasks, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.target = '_blank';
-  a.rel = 'noopener';
-  document.body.appendChild(a);
+  a.download = `eiger-tasks-${new Date().toISOString().split('T')[0]}.json`;
   a.click();
-  document.body.removeChild(a);
+  showToast('Data diexport');
 }
 
-function copyMsg() {
-  navigator.clipboard.writeText(document.getElementById('wa-preview').textContent)
-    .then(()  => toast('📋 Pesan berhasil dicopy!'))
-    .catch(()  => toast('Gunakan Ctrl+C untuk copy'));
+function clearAllData() {
+  if (!confirm('Yakin ingin menghapus semua data?')) return;
+  tasks = [];
+  renderAll();
+  showToast('Semua data dihapus');
 }
 
-// ── TOAST ──
-let toastT;
-function toast(msg, isError=false) {
-  const el = document.getElementById('toast-el');
+// Toast
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
   document.getElementById('toast-msg').textContent = msg;
-  el.classList.toggle('error', isError);
-  el.classList.add('show');
-  clearTimeout(toastT);
-  toastT = setTimeout(() => el.classList.remove('show'), 2500);
+  toast.className = 'toast show ' + type;
+  setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
-// ── CLOCK ──
-function clock() {
+// Clock
+function updateClock() {
   const now = new Date();
-  const el  = document.getElementById('close-clock');
-  if (el) el.textContent = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const el = document.getElementById('clock-time');
+  if (el) el.textContent = time;
 }
 
-// ── INIT ──
+// Load settings
+function loadSettings() {
+  const waNum = localStorage.getItem('wa-number');
+  const reminder = localStorage.getItem('reminder-time');
+  const defName = localStorage.getItem('default-name');
+  
+  if (waNum) document.getElementById('wa-number').value = waNum;
+  if (reminder) document.getElementById('reminder-time').value = reminder;
+  if (defName) {
+    document.getElementById('default-name').value = defName;
+    document.getElementById('officer-name').value = defName;
+    updateOfficer();
+  }
+}
+
+// Init
 loadTasks();
-setInterval(clock, 1000);
-clock();
+loadSettings();
+setInterval(updateClock, 1000);
+updateClock();
+
+// Close modal on outside click
+window.onclick = function(e) {
+  const modal = document.getElementById('modal');
+  if (e.target === modal) closeModal();
+};
 </script>
 </body>
 </html>
