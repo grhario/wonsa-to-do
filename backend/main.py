@@ -59,8 +59,8 @@ def create_task(task: Task):
             event = {
                 "summary": f"⏰ REMINDER: {new_task['title']}",
                 "description": f"Task baru!\nKategori: {new_task['category']}\nPrioritas: {new_task['priority']}",
-                "start": {"dateTime": now.strftime("%Y-%m-%dT08:00:00+07:00"), "timeZone": "Asia/Jakarta"},
-                "end": {"dateTime": now.strftime("%Y-%m-%dT08:30:00+07:00"), "timeZone": "Asia/Jakarta"},
+                "start": {"dateTime": (new_task['due_date'] or now.strftime("%Y-%m-%d")) + "T08:00:00+07:00", "timeZone": "Asia/Jakarta"},
+"end": {"dateTime": (new_task['due_date'] or now.strftime("%Y-%m-%d")) + "T08:30:00+07:00", "timeZone": "Asia/Jakarta"},
                 "reminders": {
                     "useDefault": False,
                     "overrides": [
