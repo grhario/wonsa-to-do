@@ -1215,7 +1215,32 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e)
     }
   }
 });
-
+// Load tasks dari backend
+async function loadTasksFromAPI() {
+  try {
+    const res = await fetch(`${API}/tasks`);
+    const data = await res.json();
+    if (Array.isArray(data)) {
+      tasks = data.map(t => ({
+        id: t.id,
+        text: t.title,
+        title: t.title,
+        type: t.task_type,
+        category: t.category,
+        done: t.is_done,
+        priority: t.priority,
+        role: t.role,
+        due_date: t.due_date,
+        date: t.due_date,
+        attachment: t.attachment || null
+      }));
+      renderAll();
+    }
+  } catch(e) {
+    console.log('Load from API failed, using local');
+  }
+}
+loadTasksFromAPI();
 // Init
 loadTasks();
 loadSettings();
