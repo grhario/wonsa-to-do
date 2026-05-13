@@ -870,13 +870,17 @@ async function addTask() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        title: text,
-        category: category,
-        task_type: newTask.type,
-        priority: priority,
-        role: newTask.role,
-        due_date: date,
-        attachment: attachment
+  title: text,
+  category: category === 'daily' ? 'Harian' :
+            category === 'weekly' ? 'Mingguan' :
+            category === 'monthly' ? 'Bulanan' : 'Harian',
+  task_type: newTask.type,
+  priority: priority,
+  role: newTask.role === 'ra' ? 'Retail Assistant' :
+        newTask.role === 'spv' ? 'SPV' : 'Semua',
+  due_date: date,
+  attachment: attachment
+})
       })
     });
   } catch (e) {
