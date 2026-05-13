@@ -4,4 +4,3 @@ supabase==2.3.4
 python-dotenv==1.0.1
 httpx==0.25.2
 python-multipart==0.0.9
-gotrue==2.3.3
