@@ -1421,6 +1421,17 @@ body {
   font-weight: 500;
 }
 
+.section-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.section-actions .btn {
+  white-space: nowrap;
+}
+
 .section-counter .counter-divider {
   color: var(--border);
   margin: 0 6px;
@@ -1617,11 +1628,19 @@ body {
   margin-bottom: 24px;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
 }
 
 .filters .form-control {
   min-width: 180px;
   width: auto;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 /* Ghost Button */

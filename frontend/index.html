@@ -89,11 +89,8 @@
             <!-- Header -->
             <header class="header">
                 <h1 id="pageTitle">Dashboard</h1>
-                <div class="header-actions">
-                    <button class="btn btn-primary" onclick="openModal()">
-                        <i class="ti ti-plus"></i>
-                        Tambah Task
-                    </button>
+                <div class="header-actions" id="headerActions">
+                    <!-- Tombol tambah global dihapus, pindah ke masing-masing section -->
                 </div>
             </header>
 
@@ -178,15 +175,20 @@
                     <div class="closing-section">
                         <div class="closing-section-header">
                             <h3><i class="ti ti-clipboard-check"></i> SOP Harian (Task Paten)</h3>
-                            <div class="section-counter">
-                                <span class="counter-value" id="sopTotal">0</span>
-                                <span class="counter-label">Total</span>
-                                <span class="counter-divider">|</span>
-                                <span class="counter-value done" id="sopDone">0</span>
-                                <span class="counter-label">Selesai</span>
-                                <span class="counter-divider">|</span>
-                                <span class="counter-value pending" id="sopPending">0</span>
-                                <span class="counter-label">Belum</span>
+                            <div class="section-actions">
+                                <button class="btn btn-primary btn-sm" onclick="openModalWithPreset('Harian','wajib')">
+                                    <i class="ti ti-plus"></i> Tambah Task
+                                </button>
+                                <div class="section-counter">
+                                    <span class="counter-value" id="sopTotal">0</span>
+                                    <span class="counter-label">Total</span>
+                                    <span class="counter-divider">|</span>
+                                    <span class="counter-value done" id="sopDone">0</span>
+                                    <span class="counter-label">Selesai</span>
+                                    <span class="counter-divider">|</span>
+                                    <span class="counter-value pending" id="sopPending">0</span>
+                                    <span class="counter-label">Belum</span>
+                                </div>
                             </div>
                         </div>
                         <div class="task-list" id="closing-sop-list">
@@ -194,19 +196,24 @@
                         </div>
                     </div>
                     
-                    <!-- Section 2: Task Tambahan & Carry Over -->
+                    <!-- Section 2: Task Tambahan -->
                     <div class="closing-section">
                         <div class="closing-section-header">
-                            <h3><i class="ti ti-plus"></i> Task Tambahan & Carry Over</h3>
-                            <div class="section-counter">
-                                <span class="counter-value" id="extraTotal">0</span>
-                                <span class="counter-label">Total</span>
-                                <span class="counter-divider">|</span>
-                                <span class="counter-value done" id="extraDone">0</span>
-                                <span class="counter-label">Selesai</span>
-                                <span class="counter-divider">|</span>
-                                <span class="counter-value pending" id="extraPending">0</span>
-                                <span class="counter-label">Belum</span>
+                            <h3><i class="ti ti-plus"></i> Task Tambahan</h3>
+                            <div class="section-actions">
+                                <button class="btn btn-primary btn-sm" onclick="openModalWithPreset('Harian','insidental')">
+                                    <i class="ti ti-plus"></i> Tambah Task
+                                </button>
+                                <div class="section-counter">
+                                    <span class="counter-value" id="extraTotal">0</span>
+                                    <span class="counter-label">Total</span>
+                                    <span class="counter-divider">|</span>
+                                    <span class="counter-value done" id="extraDone">0</span>
+                                    <span class="counter-label">Selesai</span>
+                                    <span class="counter-divider">|</span>
+                                    <span class="counter-value pending" id="extraPending">0</span>
+                                    <span class="counter-label">Belum</span>
+                                </div>
                             </div>
                         </div>
                         
@@ -237,16 +244,21 @@
                     <!-- Section 3: Carry Over -->
                     <div class="closing-section carryover-section">
                         <div class="closing-section-header">
-                            <h3><i class="ti ti-arrow-forward-up"></i> Carry Over (Belum Selesai Kemarin)</h3>
-                            <div class="section-counter">
-                                <span class="counter-value" id="carryTotal">0</span>
-                                <span class="counter-label">Total</span>
-                                <span class="counter-divider">|</span>
-                                <span class="counter-value done" id="carryDone">0</span>
-                                <span class="counter-label">Selesai</span>
-                                <span class="counter-divider">|</span>
-                                <span class="counter-value pending" id="carryPending">0</span>
-                                <span class="counter-label">Belum</span>
+                            <h3><i class="ti ti-arrow-forward-up"></i> Carry Over</h3>
+                            <div class="section-actions">
+                                <button class="btn btn-primary btn-sm" onclick="openModalWithPreset('Harian','carryover')">
+                                    <i class="ti ti-plus"></i> Tambah Task
+                                </button>
+                                <div class="section-counter">
+                                    <span class="counter-value" id="carryTotal">0</span>
+                                    <span class="counter-label">Total</span>
+                                    <span class="counter-divider">|</span>
+                                    <span class="counter-value done" id="carryDone">0</span>
+                                    <span class="counter-label">Selesai</span>
+                                    <span class="counter-divider">|</span>
+                                    <span class="counter-value pending" id="carryPending">0</span>
+                                    <span class="counter-label">Belum</span>
+                                </div>
                             </div>
                         </div>
                         <div class="task-list" id="closing-carryover-list">
@@ -286,9 +298,14 @@
                         <option value="Sedang">Sedang</option>
                         <option value="Rendah">Rendah</option>
                     </select>
-                    <button class="btn btn-success btn-sm" onclick="shareTaskListToWA('harian')">
-                        <i class="ti ti-brand-whatsapp"></i> Share ke WA
-                    </button>
+                    <div class="filter-actions">
+                        <button class="btn btn-primary btn-sm" onclick="openModal('Harian','insidental')">
+                            <i class="ti ti-plus"></i> Tambah Task
+                        </button>
+                        <button class="btn btn-success btn-sm" onclick="shareTaskListToWA('harian')">
+                            <i class="ti ti-brand-whatsapp"></i> Share ke WA
+                        </button>
+                    </div>
                 </div>
                 <div class="task-list" id="harian-list">
                     <p class="empty-state">Memuat tasks...</p>
@@ -303,9 +320,14 @@
                         <option value="Retail Assistant">Retail Assistant</option>
                         <option value="SPV">SPV</option>
                     </select>
-                    <button class="btn btn-success btn-sm" onclick="shareTaskListToWA('mingguan')">
-                        <i class="ti ti-brand-whatsapp"></i> Share ke WA
-                    </button>
+                    <div class="filter-actions">
+                        <button class="btn btn-primary btn-sm" onclick="openModal('Mingguan','insidental')">
+                            <i class="ti ti-plus"></i> Tambah Task
+                        </button>
+                        <button class="btn btn-success btn-sm" onclick="shareTaskListToWA('mingguan')">
+                            <i class="ti ti-brand-whatsapp"></i> Share ke WA
+                        </button>
+                    </div>
                 </div>
                 <div class="task-list" id="mingguan-list">
                     <p class="empty-state">Memuat tasks...</p>
@@ -320,9 +342,14 @@
                         <option value="Retail Assistant">Retail Assistant</option>
                         <option value="SPV">SPV</option>
                     </select>
-                    <button class="btn btn-success btn-sm" onclick="shareTaskListToWA('bulanan')">
-                        <i class="ti ti-brand-whatsapp"></i> Share ke WA
-                    </button>
+                    <div class="filter-actions">
+                        <button class="btn btn-primary btn-sm" onclick="openModal('Bulanan','insidental')">
+                            <i class="ti ti-plus"></i> Tambah Task
+                        </button>
+                        <button class="btn btn-success btn-sm" onclick="shareTaskListToWA('bulanan')">
+                            <i class="ti ti-brand-whatsapp"></i> Share ke WA
+                        </button>
+                    </div>
                 </div>
                 <div class="task-list" id="bulanan-list">
                     <p class="empty-state">Memuat tasks...</p>
@@ -338,9 +365,14 @@
                         <option value="Mingguan">Mingguan</option>
                         <option value="Bulanan">Bulanan</option>
                     </select>
-                    <button class="btn btn-success btn-sm" onclick="shareTaskListToWA('retail')">
-                        <i class="ti ti-brand-whatsapp"></i> Share ke WA
-                    </button>
+                    <div class="filter-actions">
+                        <button class="btn btn-primary btn-sm" onclick="openModal('Harian','wajib')">
+                            <i class="ti ti-plus"></i> Tambah Task
+                        </button>
+                        <button class="btn btn-success btn-sm" onclick="shareTaskListToWA('retail')">
+                            <i class="ti ti-brand-whatsapp"></i> Share ke WA
+                        </button>
+                    </div>
                 </div>
                 <div class="task-list" id="retail-list">
                     <p class="empty-state">Memuat tasks...</p>
@@ -356,9 +388,14 @@
                         <option value="Mingguan">Mingguan</option>
                         <option value="Bulanan">Bulanan</option>
                     </select>
-                    <button class="btn btn-success btn-sm" onclick="shareTaskListToWA('spv')">
-                        <i class="ti ti-brand-whatsapp"></i> Share ke WA
-                    </button>
+                    <div class="filter-actions">
+                        <button class="btn btn-primary btn-sm" onclick="openModal('Harian','wajib')">
+                            <i class="ti ti-plus"></i> Tambah Task
+                        </button>
+                        <button class="btn btn-success btn-sm" onclick="shareTaskListToWA('spv')">
+                            <i class="ti ti-brand-whatsapp"></i> Share ke WA
+                        </button>
+                    </div>
                 </div>
                 <div class="task-list" id="spv-list">
                     <p class="empty-state">Memuat tasks...</p>
@@ -1481,9 +1518,24 @@
         }
         
         // Modal Functions
-        function openModal() {
+        function openModal(category, taskType) {
+            // Reset form first
+            resetTaskForm();
+            
+            // Apply presets if provided
+            if (category) {
+                document.getElementById('taskCategory').value = category;
+            }
+            if (taskType) {
+                document.getElementById('taskType').value = taskType;
+            }
+            
             document.getElementById('taskModal').classList.add('active');
             document.getElementById('taskTitle').focus();
+        }
+        
+        function openModalWithPreset(category, taskType) {
+            openModal(category, taskType);
         }
         
         function closeModal() {
