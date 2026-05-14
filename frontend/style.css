@@ -2359,6 +2359,81 @@ body {
   }
 }
 
+/* MOM History */
+.mom-history-section {
+  margin-top: 36px;
+}
+
+.mom-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mom-history-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  transition: all var(--transition);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.mom-history-item:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  border-color: var(--primary-light);
+}
+
+.mom-history-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.mom-history-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.mom-history-meta {
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.mom-history-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mom-history-preview {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-height: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.mom-history-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 /* Selection */
 ::selection {
   background: var(--primary-light);

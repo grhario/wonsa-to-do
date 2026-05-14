@@ -93,8 +93,21 @@ def update_task(task_id: str, is_done: Optional[bool] = None):
 
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: str):
-    supabase.table("tasks").delete().eq("id", task_id).execute()
-    return {"message": "Task berhasil dihapus"}
+    try:
+        # Check if task exists first
+        check = supabase.table("tasks").select("id").eq("id", task_id).execute()
+        if not check.data:
+            raise HTTPException(status_code=404, detail="Task tidak ditemukan")
+        
+        result = supabase.table("tasks").delete().eq("id", task_id).execute()
+        if not result.data:
+            raise HTTPException(status_code=500, detail="Gagal menghapus task dari database")
+        
+        return {"message": "Task berhasil dihapus", "deleted_id": task_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error menghapus task: {str(e)}")
 
 @app.post("/tasks/{task_id}/toggle")
 def toggle_task(task_id: str):
