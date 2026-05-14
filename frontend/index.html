@@ -1286,7 +1286,7 @@
                     </label>` : ''}
                     <label class="task-checkbox">
                         <input type="checkbox" ${task.is_done ? 'checked' : ''} 
-                               onchange="toggleTask(${task.id})" id="chk-${task.id}">
+                               onchange="toggleTask('${task.id}')" id="chk-${task.id}">
                         <span class="checkmark"></span>
                     </label>
                     <div class="task-content-wrapper">
@@ -1316,10 +1316,10 @@
                     </div>
                     <div class="task-actions">
                         ${task.link ? `<a href="${escapeHtml(task.link)}" target="_blank" class="btn-icon btn-link" title="Buka Link"><i class="ti ti-external-link"></i></a>` : ''}
-                        <button class="btn-icon btn-edit" onclick="editTask(${task.id})" title="Edit">
+                        <button class="btn-icon btn-edit" onclick="editTask('${task.id}')" title="Edit">
                             <i class="ti ti-edit"></i>
                         </button>
-                        <button class="btn-icon btn-delete" onclick="deleteTask(${task.id})" title="Hapus">
+                        <button class="btn-icon btn-delete" onclick="deleteTask('${task.id}')" title="Hapus">
                             <i class="ti ti-trash"></i>
                         </button>
                     </div>
