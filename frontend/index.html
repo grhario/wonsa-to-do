@@ -65,7 +65,7 @@
                     <li>
                         <a href="#" class="nav-link" onclick="go('mom')">
                             <i class="ti ti-file-text"></i>
-                            <span>Template MOM</span>
+                            <span>MOM</span>
                         </a>
                     </li>
                     <li>
@@ -182,6 +182,25 @@
                     </div>
                 </div>
                 
+                <div class="closing-toolbar">
+                    <div class="toolbar-left">
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" id="selectAllClosing" onchange="toggleSelectAllClosing()">
+                            <span class="checkmark-box"></span>
+                            <span class="checkbox-label">Pilih Semua</span>
+                        </label>
+                        <span class="toolbar-info" id="closingSelectedCount">0 dipilih</span>
+                    </div>
+                    <div class="toolbar-right">
+                        <button class="btn btn-danger btn-sm" onclick="deleteSelectedClosingTasks()" id="btnDeleteSelected" disabled>
+                            <i class="ti ti-trash"></i> Hapus Terpilih
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="uncheckAllClosingTasks()">
+                            <i class="ti ti-refresh"></i> Reset Closing
+                        </button>
+                    </div>
+                </div>
+
                 <div class="task-list" id="closing-list">
                     <p class="empty-state">Memuat tasks...</p>
                 </div>
@@ -283,61 +302,141 @@
 
             <!-- Template MOM Screen -->
             <section id="screen-mom" class="screen">
-                <div class="mom-templates">
-                    <div class="mom-card">
-                        <h3><i class="ti ti-sun"></i> Briefing Pagi</h3>
-                        <div class="mom-content">
-                            <p><strong>Tanggal:</strong> <span class="mom-date"></span></p>
-                            <p><strong>Agenda:</strong></p>
-                            <ul>
-                                <li>Review target harian</li>
-                                <li>Informasi promo & produk baru</li>
-                                <li>Sharing best practices</li>
-                                <li>Reminder SOP</li>
-                            </ul>
-                            <p><strong>Peserta:</strong> Seluruh tim retail</p>
+                <div class="mom-layout">
+                    <!-- Form Section -->
+                    <div class="mom-form-card">
+                        <div class="form-group">
+                            <label>Meeting Agenda</label>
+                            <input type="text" id="momAgenda" class="form-control" placeholder="Contoh: Briefing Harian Eiger Wonosari">
                         </div>
-                        <button class="btn btn-secondary" onclick="copyMOM('briefing')">
-                            <i class="ti ti-copy"></i> Copy Template
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Date and Time</label>
+                                <input type="date" id="momDate" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Time</label>
+                                <input type="time" id="momTime" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Venue</label>
+                            <input type="text" id="momVenue" class="form-control" placeholder="Contoh: Offline Meeting / Eiger Store Wonosari">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Prepared By</label>
+                                <input type="text" id="momPreparedBy" class="form-control" placeholder="Nama yang menyiapkan MOM">
+                            </div>
+                            <div class="form-group">
+                                <label>Document Version</label>
+                                <input type="text" id="momVersion" class="form-control" placeholder="Contoh: MoM / v1.0">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Attendees</label>
+                            <div id="momAttendeesList" class="dynamic-list">
+                                <div class="dynamic-item">
+                                    <input type="text" class="form-control attendee-input" placeholder="Nama peserta 1">
+                                    <button type="button" class="btn-icon btn-delete" onclick="removeAttendeeItem(this)"><i class="ti ti-trash"></i></button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="addAttendeeItem()">
+                                <i class="ti ti-plus"></i> Tambah Peserta
+                            </button>
+                        </div>
+                        
+                        <hr style="margin: 24px 0; border-color: var(--border);">
+                        
+                        <h4 style="margin-bottom: 16px; color: var(--text);"><i class="ti ti-chart-bar" style="color: var(--primary);"></i> Cakupan Sales</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Sales Total</label>
+                                <input type="text" id="momSalesTotal" class="form-control" placeholder="Contoh: 46.304.000">
+                            </div>
+                            <div class="form-group">
+                                <label>Achievement (%)</label>
+                                <input type="text" id="momSalesAch" class="form-control" placeholder="Contoh: 21.24%">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Target Harian</label>
+                                <input type="text" id="momSalesTarget" class="form-control" placeholder="Contoh: 7.500.000">
+                            </div>
+                            <div class="form-group">
+                                <label>GAP</label>
+                                <input type="text" id="momSalesGap" class="form-control" placeholder="Contoh: 171.696.000">
+                            </div>
+                        </div>
+                        
+                        <hr style="margin: 24px 0; border-color: var(--border);">
+                        
+                        <div class="form-group">
+                            <label>Cakupan CSE (Customer Service Excellence)</label>
+                            <textarea id="momCSE" class="form-control" rows="3" placeholder="Catatan terkait CSE..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Cakupan Lainnya</label>
+                            <div id="momOtherList" class="dynamic-list">
+                                <div class="dynamic-item">
+                                    <input type="text" class="form-control other-input" placeholder="Poin 1">
+                                    <button type="button" class="btn-icon btn-delete" onclick="removeOtherItem(this)"><i class="ti ti-trash"></i></button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="addOtherItem()">
+                                <i class="ti ti-plus"></i> Tambah Poin
+                            </button>
+                        </div>
+                        
+                        <hr style="margin: 24px 0; border-color: var(--border);">
+                        
+                        <h4 style="margin-bottom: 16px; color: var(--text);"><i class="ti ti-checkbox" style="color: var(--primary);"></i> Acknowledgment & Approval</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Name (Ack 1)</label>
+                                <input type="text" id="momAckName1" class="form-control" placeholder="Nama">
+                            </div>
+                            <div class="form-group">
+                                <label>Date (Ack 1)</label>
+                                <input type="date" id="momAckDate1" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Name (Ack 2)</label>
+                                <input type="text" id="momAckName2" class="form-control" placeholder="Nama">
+                            </div>
+                            <div class="form-group">
+                                <label>Date (Ack 2)</label>
+                                <input type="date" id="momAckDate2" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary btn-lg" onclick="generateMOM()" style="width: 100%; margin-top: 10px;">
+                            <i class="ti ti-file-text"></i> Generate MOM
                         </button>
                     </div>
                     
-                    <div class="mom-card">
-                        <h3><i class="ti ti-moon"></i> Closing</h3>
-                        <div class="mom-content">
-                            <p><strong>Tanggal:</strong> <span class="mom-date"></span></p>
-                            <p><strong>Agenda:</strong></p>
-                            <ul>
-                                <li>Review penjualan harian</li>
-                                <li>Pencapaian target</li>
-                                <li>Kendala & solusi</li>
-                                <li>Stock check</li>
-                                <li>Kebersihan toko</li>
-                            </ul>
-                            <p><strong>Peserta:</strong> Tim retail & SPV</p>
+                    <!-- Preview Section -->
+                    <div class="mom-preview-card" id="momPreviewCard" style="display: none;">
+                        <div class="preview-header">
+                            <h3><i class="ti ti-eye"></i> Preview MOM</h3>
+                            <div class="preview-actions">
+                                <button class="btn btn-secondary" onclick="copyMOMResult()">
+                                    <i class="ti ti-copy"></i> Copy
+                                </button>
+                                <button class="btn btn-success" onclick="downloadMOM()">
+                                    <i class="ti ti-download"></i> Download .txt
+                                </button>
+                            </div>
                         </div>
-                        <button class="btn btn-secondary" onclick="copyMOM('closing')">
-                            <i class="ti ti-copy"></i> Copy Template
-                        </button>
-                    </div>
-                    
-                    <div class="mom-card">
-                        <h3><i class="ti ti-chart-bar"></i> Evaluasi Mingguan</h3>
-                        <div class="mom-content">
-                            <p><strong>Periode:</strong> <span class="mom-week"></span></p>
-                            <p><strong>Agenda:</strong></p>
-                            <ul>
-                                <li>Review mingguan sales</li>
-                                <li>Analisis traffic & conversion</li>
-                                <li>Evaluasi customer service</li>
-                                <li>Planning minggu depan</li>
-                                <li>Training needs</li>
-                            </ul>
-                            <p><strong>Peserta:</strong> Tim retail, SPV & Manager</p>
-                        </div>
-                        <button class="btn btn-secondary" onclick="copyMOM('evaluasi')">
-                            <i class="ti ti-copy"></i> Copy Template
-                        </button>
+                        <pre id="momPreviewText" class="mom-preview-text"></pre>
                     </div>
                 </div>
             </section>
@@ -550,7 +649,7 @@
                 'bulanan': 'Bulanan',
                 'retail': 'Retail Assistant',
                 'spv': 'SPV',
-                'mom': 'Template MOM',
+                'mom': 'Minutes of Meeting',
                 'settings': 'Settings'
             };
             document.getElementById('pageTitle').textContent = titles[screen] || 'Dashboard';
@@ -892,6 +991,109 @@
             }
         }
         
+        // Closing Bulk Selection Functions
+        function updateClosingSelection() {
+            const checkboxes = document.querySelectorAll('#closing-list .bulk-select-input');
+            const checked = Array.from(checkboxes).filter(cb => cb.checked);
+            const countEl = document.getElementById('closingSelectedCount');
+            const btnDelete = document.getElementById('btnDeleteSelected');
+            const selectAll = document.getElementById('selectAllClosing');
+            
+            countEl.textContent = checked.length + ' dipilih';
+            btnDelete.disabled = checked.length === 0;
+            
+            // Sync select-all checkbox
+            if (checkboxes.length > 0) {
+                selectAll.checked = checked.length === checkboxes.length;
+                selectAll.indeterminate = checked.length > 0 && checked.length < checkboxes.length;
+            } else {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            }
+        }
+        
+        function toggleSelectAllClosing() {
+            const selectAll = document.getElementById('selectAllClosing');
+            const checkboxes = document.querySelectorAll('#closing-list .bulk-select-input');
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateClosingSelection();
+        }
+        
+        async function deleteSelectedClosingTasks() {
+            const checkboxes = document.querySelectorAll('#closing-list .bulk-select-input:checked');
+            const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            
+            if (ids.length === 0) {
+                showToast('Pilih task yang ingin dihapus', 'info');
+                return;
+            }
+            
+            if (!confirm(`Yakin ingin menghapus ${ids.length} task ini?`)) {
+                return;
+            }
+            
+            let successCount = 0;
+            let failCount = 0;
+            
+            showToast(`Menghapus ${ids.length} task...`, 'info');
+            
+            for (const id of ids) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+                        method: 'DELETE'
+                    });
+                    if (response.ok) {
+                        tasks = tasks.filter(t => t.id !== id);
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
+                } catch (error) {
+                    console.error('Error deleting task', id, error);
+                    failCount++;
+                }
+            }
+            
+            renderAll();
+            updateStats();
+            
+            if (failCount === 0) {
+                showToast(`${successCount} task berhasil dihapus`, 'success');
+            } else {
+                showToast(`${successCount} dihapus, ${failCount} gagal`, 'error');
+            }
+            
+            document.getElementById('selectAllClosing').checked = false;
+            updateClosingSelection();
+        }
+        
+        async function uncheckAllClosingTasks() {
+            const closingTasks = tasks.filter(t => t.category === 'Harian' && t.is_done);
+            if (closingTasks.length === 0) {
+                showToast('Tidak ada task yang perlu di-reset', 'info');
+                return;
+            }
+            
+            if (!confirm(`Yakin ingin mengubah ${closingTasks.length} task menjadi belum selesai?`)) {
+                return;
+            }
+            
+            showToast('Mereset task...', 'info');
+            
+            for (const task of closingTasks) {
+                try {
+                    await fetch(`${API_BASE_URL}/tasks/${task.id}/toggle`, { method: 'POST' });
+                    task.is_done = false;
+                } catch (err) {
+                    console.error('Gagal reset task', task.id, err);
+                }
+            }
+            
+            renderAll();
+            updateStats();
+            showToast('Semua task telah di-reset', 'success');
+        }
+        
         // Render All
         function renderAll() {
             renderDashboard();
@@ -928,7 +1130,7 @@
             document.getElementById('closingDone').textContent = done;
             document.getElementById('closingPending').textContent = pending;
             
-            container.innerHTML = renderList(closingTasks);
+            container.innerHTML = renderList(closingTasks, false, true);
         }
         
         // Render Harian
@@ -1007,7 +1209,7 @@
         }
         
         // Render List
-        function renderList(taskList, isMini = false) {
+        function renderList(taskList, isMini = false, enableSelect = false) {
             if (taskList.length === 0) {
                 return '<div class="empty-state"><i class="ti ti-inbox"></i><p>Belum ada task</p></div>';
             }
@@ -1037,6 +1239,11 @@
             
             return taskList.map(task => `
                 <div class="task-row ${task.is_done ? 'done' : ''} ${task.is_done ? 'task-completed' : ''}" data-id="${task.id}">
+                    ${enableSelect ? `
+                    <label class="bulk-checkbox" title="Pilih task">
+                        <input type="checkbox" class="bulk-select-input" value="${task.id}" onchange="updateClosingSelection()">
+                        <span class="bulk-checkmark"></span>
+                    </label>` : ''}
                     <label class="task-checkbox">
                         <input type="checkbox" ${task.is_done ? 'checked' : ''} 
                                onchange="toggleTask(${task.id})" id="chk-${task.id}">
@@ -1184,82 +1391,212 @@
             document.getElementById('clock').textContent = timeString;
         }
         
-        // MOM Functions
+        // MOM Generator Functions
         function updateMOMDates() {
             const now = new Date();
-            const dateStr = now.toLocaleDateString('id-ID', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+            
+            // Set default date & time in form
+            const dateInput = document.getElementById('momDate');
+            const timeInput = document.getElementById('momTime');
+            const ackDate1 = document.getElementById('momAckDate1');
+            const ackDate2 = document.getElementById('momAckDate2');
+            
+            if (dateInput && !dateInput.value) {
+                dateInput.value = now.toISOString().split('T')[0];
+            }
+            if (timeInput && !timeInput.value) {
+                timeInput.value = now.toTimeString().slice(0, 5);
+            }
+            if (ackDate1 && !ackDate1.value) {
+                ackDate1.value = now.toISOString().split('T')[0];
+            }
+            if (ackDate2 && !ackDate2.value) {
+                ackDate2.value = now.toISOString().split('T')[0];
+            }
+        }
+        
+        function addAttendeeItem() {
+            const list = document.getElementById('momAttendeesList');
+            const count = list.children.length + 1;
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.innerHTML = `
+                <input type="text" class="form-control attendee-input" placeholder="Nama peserta ${count}">
+                <button type="button" class="btn-icon btn-delete" onclick="removeAttendeeItem(this)"><i class="ti ti-trash"></i></button>
+            `;
+            list.appendChild(div);
+        }
+        
+        function removeAttendeeItem(btn) {
+            const list = document.getElementById('momAttendeesList');
+            if (list.children.length > 1) {
+                btn.parentElement.remove();
+            } else {
+                list.children[0].querySelector('input').value = '';
+            }
+        }
+        
+        function addOtherItem() {
+            const list = document.getElementById('momOtherList');
+            const count = list.children.length + 1;
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.innerHTML = `
+                <input type="text" class="form-control other-input" placeholder="Poin ${count}">
+                <button type="button" class="btn-icon btn-delete" onclick="removeOtherItem(this)"><i class="ti ti-trash"></i></button>
+            `;
+            list.appendChild(div);
+        }
+        
+        function removeOtherItem(btn) {
+            const list = document.getElementById('momOtherList');
+            if (list.children.length > 1) {
+                btn.parentElement.remove();
+            } else {
+                list.children[0].querySelector('input').value = '';
+            }
+        }
+        
+        function generateMOM() {
+            const agenda = document.getElementById('momAgenda').value.trim() || 'Briefing Harian Eiger Wonosari';
+            const dateVal = document.getElementById('momDate').value;
+            const timeVal = document.getElementById('momTime').value;
+            const venue = document.getElementById('momVenue').value.trim() || 'Offline Meeting';
+            const preparedBy = document.getElementById('momPreparedBy').value.trim();
+            const version = document.getElementById('momVersion').value.trim() || 'MoM';
+            
+            // Attendees
+            const attendees = [];
+            document.querySelectorAll('.attendee-input').forEach(input => {
+                if (input.value.trim()) attendees.push(input.value.trim());
             });
             
-            document.querySelectorAll('.mom-date').forEach(el => {
-                el.textContent = dateStr;
+            // Sales data
+            const salesTotal = document.getElementById('momSalesTotal').value.trim();
+            const salesAch = document.getElementById('momSalesAch').value.trim();
+            const salesTarget = document.getElementById('momSalesTarget').value.trim();
+            const salesGap = document.getElementById('momSalesGap').value.trim();
+            
+            // CSE
+            const cse = document.getElementById('momCSE').value.trim();
+            
+            // Other points
+            const others = [];
+            document.querySelectorAll('.other-input').forEach(input => {
+                if (input.value.trim()) others.push(input.value.trim());
             });
             
-            // Week range
-            const startOfWeek = new Date(now);
-            startOfWeek.setDate(now.getDate() - now.getDay());
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            // Ack
+            const ackName1 = document.getElementById('momAckName1').value.trim();
+            const ackDate1 = document.getElementById('momAckDate1').value;
+            const ackName2 = document.getElementById('momAckName2').value.trim();
+            const ackDate2 = document.getElementById('momAckDate2').value;
             
-            const weekStr = `${startOfWeek.toLocaleDateString('id-ID')} - ${endOfWeek.toLocaleDateString('id-ID')}`;
-            document.querySelectorAll('.mom-week').forEach(el => {
-                el.textContent = weekStr;
+            // Format date
+            let dateStr = dateVal;
+            if (dateVal) {
+                const d = new Date(dateVal);
+                dateStr = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            }
+            
+            const formatAckDate = (d) => d ? new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
+            
+            // Build MOM text
+            let mom = `================================================================================\n`;
+            mom += `                        MINUTES OF MEETING (MOM)\n`;
+            mom += `                    PT. Eligerindo Multi Produk Industri\n`;
+            mom += `================================================================================\n\n`;
+            
+            mom += `Date and Time      : ${dateStr}${timeVal ? ', ' + timeVal : ''}\n`;
+            mom += `Venue              : ${venue}\n`;
+            mom += `Prepared By        : ${preparedBy || '-'}\n`;
+            mom += `Meeting Agenda     : ${agenda}\n`;
+            mom += `Document Version   : ${version}\n\n`;
+            
+            mom += `--------------------------------------------------------------------------------\n`;
+            mom += `                                  ATTENDEES\n`;
+            mom += `--------------------------------------------------------------------------------\n`;
+            if (attendees.length === 0) {
+                mom += `-\n`;
+            } else {
+                attendees.forEach((name, i) => {
+                    mom += `${i + 1}. ${name}\n`;
+                });
+            }
+            mom += `\n`;
+            
+            mom += `--------------------------------------------------------------------------------\n`;
+            mom += `                              BAHASAN BRIEFING\n`;
+            mom += `--------------------------------------------------------------------------------\n\n`;
+            
+            // 1. Cakupan Sales
+            mom += `1. Cakupan Sales :\n`;
+            mom += `   Sales Total   : ${salesTotal || '-'}\n`;
+            mom += `   Ach           : ${salesAch || '-'}\n`;
+            mom += `   Target Harian : ${salesTarget || '-'}\n`;
+            mom += `   GAP           : ${salesGap || '-'}\n\n`;
+            
+            // 2. Cakupan CSE
+            mom += `2. Cakupan CSE :\n`;
+            mom += `   ${cse || '-'}\n\n`;
+            
+            // 3. Cakupan Lainnya
+            mom += `3. Cakupan Lainnya :\n`;
+            if (others.length === 0) {
+                mom += `   -\n`;
+            } else {
+                others.forEach((item, i) => {
+                    mom += `   ${i + 1}. ${item}\n`;
+                });
+            }
+            mom += `\n`;
+            
+            mom += `--------------------------------------------------------------------------------\n`;
+            mom += `                         ACKNOWLEDGMENT & APPROVAL\n`;
+            mom += `--------------------------------------------------------------------------------\n`;
+            mom += `Name : ${ackName1 || '-'}                    Name : ${ackName2 || '-'}\n`;
+            mom += `Date : ${formatAckDate(ackDate1)}                    Date : ${formatAckDate(ackDate2)}\n\n`;
+            
+            mom += `================================================================================\n`;
+            mom += `Dibuat melalui Eiger Wonosari Task Manager\n`;
+            mom += `================================================================================`;
+            
+            // Show preview
+            document.getElementById('momPreviewText').textContent = mom;
+            document.getElementById('momPreviewCard').style.display = 'block';
+            
+            if (window.innerWidth <= 1024) {
+                document.getElementById('momPreviewCard').scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            showToast('MOM berhasil dibuat', 'success');
+        }
+        
+        function copyMOMResult() {
+            const text = document.getElementById('momPreviewText').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('MOM berhasil disalin ke clipboard', 'success');
+            }).catch(() => {
+                showToast('Gagal menyalin', 'error');
             });
         }
         
-        function copyMOM(type) {
-            const templates = {
-                'briefing': `[BRIEFING PAGI EIGER WONOSARI]
-Tanggal: ${new Date().toLocaleDateString('id-ID')}
-
-Agenda:
-1. Review target harian
-2. Informasi promo & produk baru  
-3. Sharing best practices
-4. Reminder SOP
-
-Peserta: Seluruh tim retail
-
----
-Sent from Eiger Wonosari Task Manager`,
-                'closing': `[CLOSING EIGER WONOSARI]
-Tanggal: ${new Date().toLocaleDateString('id-ID')}
-
-Agenda:
-1. Review penjualan harian
-2. Pencapaian target
-3. Kendala & solusi
-4. Stock check
-5. Kebersihan toko
-
-Peserta: Tim retail & SPV
-
----
-Sent from Eiger Wonosari Task Manager`,
-                'evaluasi': `[EVALUASI MINGGUAN EIGER WONOSARI]
-Periode: Minggu ini
-
-Agenda:
-1. Review mingguan sales
-2. Analisis traffic & conversion
-3. Evaluasi customer service
-4. Planning minggu depan
-5. Training needs
-
-Peserta: Tim retail, SPV & Manager
-
----
-Sent from Eiger Wonosari Task Manager`
-            };
+        function downloadMOM() {
+            const text = document.getElementById('momPreviewText').textContent;
+            const agenda = document.getElementById('momAgenda').value.trim() || 'MOM';
+            const date = document.getElementById('momDate').value || new Date().toISOString().split('T')[0];
             
-            navigator.clipboard.writeText(templates[type]).then(() => {
-                showToast('Template MOM berhasil disalin', 'success');
-            }).catch(() => {
-                showToast('Gagal menyalin template', 'error');
-            });
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `MOM_${agenda.replace(/\s+/g, '_')}_${date}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('File MOM berhasil di-download', 'success');
         }
         
         // WhatsApp Report
