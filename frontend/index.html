@@ -962,7 +962,7 @@
             try {
                 showToast('Mengupdate task...', 'info');
                 const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
-                    method: 'PATCH',
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -1895,7 +1895,8 @@ th, td { border: 1px solid #000; padding: 8px; }
         
         // Share Task List to WhatsApp
         function shareTaskListToWA(type) {
-            const waNumber = localStorage.getItem('waNumber') || '';
+            let waNumber = localStorage.getItem('waNumber') || '';
+            waNumber = normalizeWANumber(waNumber);
             if (!waNumber) {
                 showToast('Mohon atur nomor WA di Settings terlebih dahulu', 'error');
                 go('settings');
@@ -2034,8 +2035,21 @@ th, td { border: 1px solid #000; padding: 8px; }
             document.getElementById('waPreview').style.display = 'block';
         }
         
+        function normalizeWANumber(num) {
+            if (!num) return '';
+            num = num.replace(/\D/g, ''); // remove all non-digits
+            if (num.startsWith('0')) {
+                num = '62' + num.substring(1);
+            }
+            if (!num.startsWith('62')) {
+                num = '62' + num;
+            }
+            return num;
+        }
+        
         function sendWA() {
-            const waNumber = localStorage.getItem('waNumber') || '';
+            let waNumber = localStorage.getItem('waNumber') || '';
+            waNumber = normalizeWANumber(waNumber);
             const text = document.getElementById('waText').textContent;
             
             if (!waNumber) {
@@ -2063,10 +2077,13 @@ th, td { border: 1px solid #000; padding: 8px; }
         }
         
         function saveSettings() {
-            const waNumber = document.getElementById('waNumber').value.trim();
+            let waNumber = document.getElementById('waNumber').value.trim();
             const reminderTime = document.getElementById('reminderTime').value;
             const defaultName = document.getElementById('defaultName').value.trim();
             
+            // Auto-convert WA number
+            const originalNumber = waNumber;
+            waNumber = normalizeWANumber(waNumber);
             localStorage.setItem('waNumber', waNumber);
             localStorage.setItem('reminderTime', reminderTime);
             localStorage.setItem('defaultName', defaultName);
@@ -2074,7 +2091,12 @@ th, td { border: 1px solid #000; padding: 8px; }
             // Update default name in closing
             document.getElementById('officerName').value = defaultName;
             
-            showToast('Pengaturan berhasil disimpan', 'success');
+            if (originalNumber !== waNumber) {
+                document.getElementById('waNumber').value = waNumber;
+                showToast(`Nomor WA dikonversi ke format internasional: ${waNumber}`, 'success');
+            } else {
+                showToast('Pengaturan berhasil disimpan', 'success');
+            }
         }
         
         function exportData() {

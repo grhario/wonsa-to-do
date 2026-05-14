@@ -84,12 +84,34 @@ def create_task(task: Task):
     return new_task
 
 @app.patch("/tasks/{task_id}")
-def update_task(task_id: str, is_done: Optional[bool] = None):
+def update_task_status(task_id: str, is_done: Optional[bool] = None):
     data = {}
     if is_done is not None:
         data["is_done"] = is_done
     result = supabase.table("tasks").update(data).eq("id", task_id).execute()
     return result.data[0]
+
+@app.put("/tasks/{task_id}")
+def update_task_full(task_id: str, task: Task):
+    try:
+        check = supabase.table("tasks").select("id").eq("id", task_id).execute()
+        if not check.data:
+            raise HTTPException(status_code=404, detail="Task tidak ditemukan")
+        
+        data = task.dict()
+        data.pop("attachment", None)
+        if data.get("due_date"):
+            data["due_date"] = str(data["due_date"])
+        
+        result = supabase.table("tasks").update(data).eq("id", task_id).execute()
+        if not result.data:
+            raise HTTPException(status_code=500, detail="Gagal mengupdate task")
+        
+        return result.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error mengupdate task: {str(e)}")
 
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: str):
