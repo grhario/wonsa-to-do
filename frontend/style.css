@@ -1530,11 +1530,28 @@ body {
   gap: 14px;
   margin-bottom: 24px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .filters .form-control {
   min-width: 180px;
   width: auto;
+}
+
+/* Ghost Button */
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px dashed var(--border);
+  box-shadow: none;
+  font-weight: 500;
+}
+
+.btn-ghost:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+  border-color: var(--primary);
+  transform: translateY(-1px);
 }
 
 /* Page Header */

@@ -236,6 +236,9 @@
                         <option value="Sedang">Sedang</option>
                         <option value="Rendah">Rendah</option>
                     </select>
+                    <button class="btn btn-success btn-sm" onclick="shareTaskListToWA('harian')">
+                        <i class="ti ti-brand-whatsapp"></i> Share ke WA
+                    </button>
                 </div>
                 <div class="task-list" id="harian-list">
                     <p class="empty-state">Memuat tasks...</p>
@@ -250,6 +253,9 @@
                         <option value="Retail Assistant">Retail Assistant</option>
                         <option value="SPV">SPV</option>
                     </select>
+                    <button class="btn btn-success btn-sm" onclick="shareTaskListToWA('mingguan')">
+                        <i class="ti ti-brand-whatsapp"></i> Share ke WA
+                    </button>
                 </div>
                 <div class="task-list" id="mingguan-list">
                     <p class="empty-state">Memuat tasks...</p>
@@ -264,6 +270,9 @@
                         <option value="Retail Assistant">Retail Assistant</option>
                         <option value="SPV">SPV</option>
                     </select>
+                    <button class="btn btn-success btn-sm" onclick="shareTaskListToWA('bulanan')">
+                        <i class="ti ti-brand-whatsapp"></i> Share ke WA
+                    </button>
                 </div>
                 <div class="task-list" id="bulanan-list">
                     <p class="empty-state">Memuat tasks...</p>
@@ -279,6 +288,9 @@
                         <option value="Mingguan">Mingguan</option>
                         <option value="Bulanan">Bulanan</option>
                     </select>
+                    <button class="btn btn-success btn-sm" onclick="shareTaskListToWA('retail')">
+                        <i class="ti ti-brand-whatsapp"></i> Share ke WA
+                    </button>
                 </div>
                 <div class="task-list" id="retail-list">
                     <p class="empty-state">Memuat tasks...</p>
@@ -294,6 +306,9 @@
                         <option value="Mingguan">Mingguan</option>
                         <option value="Bulanan">Bulanan</option>
                     </select>
+                    <button class="btn btn-success btn-sm" onclick="shareTaskListToWA('spv')">
+                        <i class="ti ti-brand-whatsapp"></i> Share ke WA
+                    </button>
                 </div>
                 <div class="task-list" id="spv-list">
                     <p class="empty-state">Memuat tasks...</p>
@@ -520,80 +535,88 @@
                 <form id="taskForm" onsubmit="event.preventDefault(); addTask();">
                     <div class="form-group">
                         <label>Judul Task <span class="required">*</span></label>
-                        <input type="text" id="taskTitle" class="form-control" required placeholder="Masukkan judul task">
+                        <input type="text" id="taskTitle" class="form-control" required placeholder="Contoh: Stock opname harian">
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Kategori <span class="required">*</span></label>
-                            <select id="taskCategory" class="form-control" required>
-                                <option value="Harian">Harian</option>
+                            <label>Kategori</label>
+                            <select id="taskCategory" class="form-control">
+                                <option value="Harian" selected>Harian</option>
                                 <option value="Mingguan">Mingguan</option>
                                 <option value="Bulanan">Bulanan</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Role <span class="required">*</span></label>
-                            <select id="taskRole" class="form-control" required>
-                                <option value="Semua">Semua</option>
+                            <label>Role</label>
+                            <select id="taskRole" class="form-control">
+                                <option value="Semua" selected>Semua</option>
                                 <option value="Retail Assistant">Retail Assistant</option>
                                 <option value="SPV">SPV</option>
                             </select>
                         </div>
                     </div>
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Prioritas <span class="required">*</span></label>
-                            <select id="taskPriority" class="form-control" required>
-                                <option value="Tinggi">Tinggi</option>
-                                <option value="Sedang" selected>Sedang</option>
-                                <option value="Rendah">Rendah</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Tipe Task <span class="required">*</span></label>
-                            <select id="taskType" class="form-control" required>
-                                <option value="wajib">Wajib</option>
-                                <option value="insidental">Insidental</option>
-                            </select>
-                        </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-sm btn-ghost" onclick="toggleAdvancedOptions()" id="btnAdvancedToggle">
+                            <i class="ti ti-chevron-down" id="advancedIcon"></i> Lainnya (Prioritas, Tipe, dll.)
+                        </button>
                     </div>
                     
-                    <div class="form-group">
-                        <label>Deskripsi</label>
-                        <textarea id="taskDescription" class="form-control" rows="3" placeholder="Deskripsi task (opsional)"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Due Date</label>
-                        <input type="date" id="taskDueDate" class="form-control">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Attachment</label>
-                        <div class="attachment-toggle">
-                            <label class="radio-label">
-                                <input type="radio" name="attachmentType" value="none" checked onchange="toggleAttachmentType()">
-                                <span>Tidak ada</span>
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="attachmentType" value="link" onchange="toggleAttachmentType()">
-                                <span>Link</span>
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="attachmentType" value="file" onchange="toggleAttachmentType()">
-                                <span>File</span>
-                            </label>
+                    <div id="advancedOptions" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Prioritas</label>
+                                <select id="taskPriority" class="form-control">
+                                    <option value="Tinggi">Tinggi</option>
+                                    <option value="Sedang" selected>Sedang</option>
+                                    <option value="Rendah">Rendah</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Tipe Task</label>
+                                <select id="taskType" class="form-control">
+                                    <option value="wajib" selected>Wajib</option>
+                                    <option value="insidental">Insidental</option>
+                                </select>
+                            </div>
                         </div>
                         
-                        <div id="linkInput" class="attachment-input" style="display: none;">
-                            <input type="url" id="taskLink" class="form-control" placeholder="https://example.com">
+                        <div class="form-group">
+                            <label>Deskripsi</label>
+                            <textarea id="taskDescription" class="form-control" rows="2" placeholder="Deskripsi tambahan (opsional)"></textarea>
                         </div>
                         
-                        <div id="fileInput" class="attachment-input" style="display: none;">
-                            <input type="file" id="taskFile" class="form-control" onchange="handleFileSelect(event)">
-                            <div id="filePreview" class="file-preview"></div>
+                        <div class="form-group">
+                            <label>Due Date</label>
+                            <input type="date" id="taskDueDate" class="form-control">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Attachment</label>
+                            <div class="attachment-toggle">
+                                <label class="radio-label">
+                                    <input type="radio" name="attachmentType" value="none" checked onchange="toggleAttachmentType()">
+                                    <span>Tidak ada</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="attachmentType" value="link" onchange="toggleAttachmentType()">
+                                    <span>Link</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="attachmentType" value="file" onchange="toggleAttachmentType()">
+                                    <span>File</span>
+                                </label>
+                            </div>
+                            
+                            <div id="linkInput" class="attachment-input" style="display: none;">
+                                <input type="url" id="taskLink" class="form-control" placeholder="https://example.com">
+                            </div>
+                            
+                            <div id="fileInput" class="attachment-input" style="display: none;">
+                                <input type="file" id="taskFile" class="form-control" onchange="handleFileSelect(event)">
+                                <div id="filePreview" class="file-preview"></div>
+                            </div>
                         </div>
                     </div>
                     
@@ -1350,6 +1373,9 @@
             toggleAttachmentType();
             editingTaskId = null;
             document.querySelector('.modal-header h2').textContent = 'Tambah Task Baru';
+            // Collapse advanced options
+            document.getElementById('advancedOptions').style.display = 'none';
+            document.getElementById('advancedIcon').className = 'ti ti-chevron-down';
         }
         
         // Attachment Toggle
@@ -1364,6 +1390,16 @@
                 selectedFileBase64 = null;
                 document.getElementById('filePreview').innerHTML = '';
             }
+        }
+        
+        // Advanced Options Toggle
+        function toggleAdvancedOptions() {
+            const adv = document.getElementById('advancedOptions');
+            const icon = document.getElementById('advancedIcon');
+            const isHidden = adv.style.display === 'none';
+            adv.style.display = isHidden ? 'block' : 'none';
+            icon.classList.toggle('ti-chevron-down', !isHidden);
+            icon.classList.toggle('ti-chevron-up', isHidden);
         }
         
         // File Select
@@ -1855,6 +1891,90 @@ th, td { border: 1px solid #000; padding: 8px; }
             
             renderMOMHistory();
             showToast('MOM dihapus dari riwayat', 'success');
+        }
+        
+        // Share Task List to WhatsApp
+        function shareTaskListToWA(type) {
+            const waNumber = localStorage.getItem('waNumber') || '';
+            if (!waNumber) {
+                showToast('Mohon atur nomor WA di Settings terlebih dahulu', 'error');
+                go('settings');
+                return;
+            }
+            
+            let filtered = [];
+            let title = '';
+            
+            switch(type) {
+                case 'harian':
+                    title = 'To-Do Harian';
+                    filtered = tasks.filter(t => t.category === 'Harian');
+                    const roleFilter = document.getElementById('filterRoleHarian').value;
+                    const priorityFilter = document.getElementById('filterPriorityHarian').value;
+                    if (roleFilter !== 'all') filtered = filtered.filter(t => t.role === roleFilter || t.role === 'Semua');
+                    if (priorityFilter !== 'all') filtered = filtered.filter(t => t.priority === priorityFilter);
+                    break;
+                case 'mingguan':
+                    title = 'Task Mingguan';
+                    filtered = tasks.filter(t => t.category === 'Mingguan');
+                    const roleMingguan = document.getElementById('filterRoleMingguan').value;
+                    if (roleMingguan !== 'all') filtered = filtered.filter(t => t.role === roleMingguan || t.role === 'Semua');
+                    break;
+                case 'bulanan':
+                    title = 'Task Bulanan';
+                    filtered = tasks.filter(t => t.category === 'Bulanan');
+                    const roleBulanan = document.getElementById('filterRoleBulanan').value;
+                    if (roleBulanan !== 'all') filtered = filtered.filter(t => t.role === roleBulanan || t.role === 'Semua');
+                    break;
+                case 'retail':
+                    title = 'Task Retail Assistant';
+                    filtered = tasks.filter(t => t.role === 'Retail Assistant' || t.role === 'Semua');
+                    const catRetail = document.getElementById('filterCategoryRetail').value;
+                    if (catRetail !== 'all') filtered = filtered.filter(t => t.category === catRetail);
+                    break;
+                case 'spv':
+                    title = 'Task SPV';
+                    filtered = tasks.filter(t => t.role === 'SPV' || t.role === 'Semua');
+                    const catSPV = document.getElementById('filterCategorySPV').value;
+                    if (catSPV !== 'all') filtered = filtered.filter(t => t.category === catSPV);
+                    break;
+            }
+            
+            if (filtered.length === 0) {
+                showToast('Tidak ada task untuk dishare', 'info');
+                return;
+            }
+            
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            const done = filtered.filter(t => t.is_done);
+            const pending = filtered.filter(t => !t.is_done);
+            
+            let text = `*${title.toUpperCase()} - EIGER WONOSARI*\n\n`;
+            text += `Tanggal: ${dateStr}\n`;
+            text += `Total: ${filtered.length} task | Selesai: ${done.length} | Belum: ${pending.length}\n\n`;
+            
+            if (pending.length > 0) {
+                text += `*BELUM SELESAI (${pending.length}):*\n`;
+                pending.forEach((t, i) => {
+                    text += `${i + 1}. ${t.title} [${t.priority}]\n`;
+                });
+                text += `\n`;
+            }
+            
+            if (done.length > 0) {
+                text += `*SUDAH SELESAI (${done.length}):*\n`;
+                done.forEach((t, i) => {
+                    text += `${i + 1}. ~${t.title}~\n`;
+                });
+                text += `\n`;
+            }
+            
+            text += `_Sent from Eiger Wonosari Task Manager_`;
+            
+            const encoded = encodeURIComponent(text);
+            window.open(`https://wa.me/${waNumber}?text=${encoded}`, '_blank');
         }
         
         // WhatsApp Report
