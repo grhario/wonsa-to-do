@@ -1099,6 +1099,11 @@ body {
   color: var(--info);
 }
 
+.btn-carryover:hover {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #d97706;
+}
+
 /* Task Link */
 .task-link-row {
   margin-top: 10px;
@@ -1358,6 +1363,11 @@ body {
 
 .closing-section:hover {
   box-shadow: var(--shadow-md);
+}
+
+.carryover-section {
+  border-left: 4px solid #f59e0b;
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(245, 158, 11, 0.05) 100%);
 }
 
 .closing-section-header {

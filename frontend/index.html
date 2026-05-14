@@ -233,6 +233,26 @@
                             <p class="empty-state"><i class="ti ti-inbox"></i><p>Belum ada task tambahan</p></p>
                         </div>
                     </div>
+                    
+                    <!-- Section 3: Carry Over -->
+                    <div class="closing-section carryover-section">
+                        <div class="closing-section-header">
+                            <h3><i class="ti ti-arrow-forward-up"></i> Carry Over (Belum Selesai Kemarin)</h3>
+                            <div class="section-counter">
+                                <span class="counter-value" id="carryTotal">0</span>
+                                <span class="counter-label">Total</span>
+                                <span class="counter-divider">|</span>
+                                <span class="counter-value done" id="carryDone">0</span>
+                                <span class="counter-label">Selesai</span>
+                                <span class="counter-divider">|</span>
+                                <span class="counter-value pending" id="carryPending">0</span>
+                                <span class="counter-label">Belum</span>
+                            </div>
+                        </div>
+                        <div class="task-list" id="closing-carryover-list">
+                            <p class="empty-state"><i class="ti ti-arrow-forward-up"></i><p>Tidak ada carry over</p></p>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="closing-actions">
@@ -614,6 +634,7 @@
                                 <select id="taskType" class="form-control">
                                     <option value="wajib" selected>Wajib</option>
                                     <option value="insidental">Insidental</option>
+                                    <option value="carryover">Carry Over</option>
                                 </select>
                             </div>
                         </div>
@@ -1034,6 +1055,54 @@
             }
         }
         
+        // Mark as Carry Over
+        async function markAsCarryOver(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+            
+            if (!confirm(`Jadikan "${task.title}" sebagai Carry Over (pindah ke besok)?`)) {
+                return;
+            }
+            
+            try {
+                showToast('Mengupdate task...', 'info');
+                const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: task.title,
+                        category: task.category,
+                        role: task.role,
+                        priority: task.priority,
+                        task_type: 'carryover',
+                        description: task.description,
+                        due_date: task.due_date,
+                        link: task.link,
+                        attachment: task.attachment
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to update task');
+                }
+                
+                const updatedTask = await response.json();
+                const index = tasks.findIndex(t => t.id === id);
+                if (index !== -1) {
+                    tasks[index] = updatedTask;
+                }
+                
+                renderAll();
+                updateStats();
+                showToast('Task dipindahkan ke Carry Over', 'success');
+            } catch (error) {
+                console.error('Error carry over task:', error);
+                showToast('Gagal mengupdate task: ' + error.message, 'error');
+            }
+        }
+        
         // Delete Task
         async function deleteTask(id) {
             if (!confirm('Yakin ingin menghapus task ini?')) {
@@ -1197,11 +1266,14 @@
         function renderClosing() {
             const sopContainer = document.getElementById('closing-sop-list');
             const extraContainer = document.getElementById('closing-list');
+            const carryContainer = document.getElementById('closing-carryover-list');
             
             // SOP Harian = task wajib (paten)
             const sopTasks = tasks.filter(t => t.category === 'Harian' && t.task_type === 'wajib');
-            // Task Tambahan = task insidental (baru, carry over, dll)
+            // Task Tambahan = task insidental (baru hari ini)
             const extraTasks = tasks.filter(t => t.category === 'Harian' && t.task_type === 'insidental');
+            // Carry Over = task carryover (belum selesai dari hari sebelumnya)
+            const carryTasks = tasks.filter(t => t.category === 'Harian' && t.task_type === 'carryover');
             
             // Update SOP counters
             document.getElementById('sopTotal').textContent = sopTasks.length;
@@ -1213,8 +1285,14 @@
             document.getElementById('extraDone').textContent = extraTasks.filter(t => t.is_done).length;
             document.getElementById('extraPending').textContent = extraTasks.filter(t => !t.is_done).length;
             
+            // Update Carry Over counters
+            document.getElementById('carryTotal').textContent = carryTasks.length;
+            document.getElementById('carryDone').textContent = carryTasks.filter(t => t.is_done).length;
+            document.getElementById('carryPending').textContent = carryTasks.filter(t => !t.is_done).length;
+            
             sopContainer.innerHTML = renderList(sopTasks, false, false);
             extraContainer.innerHTML = renderList(extraTasks, false, true);
+            carryContainer.innerHTML = renderList(carryTasks, false, true);
             
             // Update selection count
             updateClosingSelection();
@@ -1321,7 +1399,8 @@
             
             const typeIcons = {
                 'wajib': 'ti-checkbox',
-                'insidental': 'ti-clipboard-plus'
+                'insidental': 'ti-clipboard-plus',
+                'carryover': 'ti-arrow-forward-up'
             };
             
             return taskList.map(task => `
@@ -1353,7 +1432,7 @@
                                 </span>
                                 <span class="task-type-badge ${task.task_type}">
                                     <i class="ti ${typeIcons[task.task_type] || 'ti-checkbox'}"></i>
-                                    ${task.task_type === 'wajib' ? 'Wajib' : 'Insidental'}
+                                    ${task.task_type === 'wajib' ? 'Wajib' : task.task_type === 'carryover' ? 'Carry Over' : 'Insidental'}
                                 </span>
                             </div>
                         </div>
@@ -1363,6 +1442,10 @@
                     </div>
                     <div class="task-actions">
                         ${task.link ? `<a href="${escapeHtml(task.link)}" target="_blank" class="btn-icon btn-link" title="Buka Link"><i class="ti ti-external-link"></i></a>` : ''}
+                        ${!task.is_done && task.task_type !== 'carryover' ? `
+                        <button class="btn-icon btn-carryover" onclick="markAsCarryOver('${task.id}')" title="Jadikan Carry Over">
+                            <i class="ti ti-arrow-forward-up"></i>
+                        </button>` : ''}
                         <button class="btn-icon btn-edit" onclick="editTask('${task.id}')" title="Edit">
                             <i class="ti ti-edit"></i>
                         </button>
@@ -2044,9 +2127,14 @@ th, td { border: 1px solid #000; padding: 8px; }
             const extraDone = extraTasks.filter(t => t.is_done);
             const extraPending = extraTasks.filter(t => !t.is_done);
             
-            const totalTasks = sopTasks.length + extraTasks.length;
-            const totalDone = sopDone.length + extraDone.length;
-            const totalPending = sopPending.length + extraPending.length;
+            // Carry Over tasks
+            const carryTasks = tasks.filter(t => t.category === 'Harian' && t.task_type === 'carryover');
+            const carryDone = carryTasks.filter(t => t.is_done);
+            const carryPending = carryTasks.filter(t => !t.is_done);
+            
+            const totalTasks = sopTasks.length + extraTasks.length + carryTasks.length;
+            const totalDone = sopDone.length + extraDone.length + carryDone.length;
+            const totalPending = sopPending.length + extraPending.length + carryPending.length;
             
             const now = new Date();
             const dateStr = now.toLocaleDateString('id-ID', { 
@@ -2078,6 +2166,17 @@ th, td { border: 1px solid #000; padding: 8px; }
                 report += `- Tidak ada task tambahan\n`;
             } else {
                 extraTasks.forEach((t, i) => {
+                    const status = t.is_done ? '✅' : '⬜';
+                    report += `${status} ${t.title}\n`;
+                });
+            }
+            
+            // Carry Over Section
+            report += `\n*🔄 CARRY OVER (${carryDone.length}/${carryTasks.length} selesai):*\n`;
+            if (carryTasks.length === 0) {
+                report += `- Tidak ada carry over\n`;
+            } else {
+                carryTasks.forEach((t, i) => {
                     const status = t.is_done ? '✅' : '⬜';
                     report += `${status} ${t.title}\n`;
                 });
