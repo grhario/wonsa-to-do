@@ -1340,6 +1340,82 @@ body {
   flex-wrap: wrap;
 }
 
+/* Closing Sections */
+.closing-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.closing-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow);
+  transition: all var(--transition);
+}
+
+.closing-section:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.closing-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.closing-section-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.closing-section-header h3 i {
+  color: var(--primary);
+  font-size: 22px;
+}
+
+.section-counter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.section-counter .counter-value {
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--text);
+}
+
+.section-counter .counter-value.done {
+  color: var(--success);
+}
+
+.section-counter .counter-value.pending {
+  color: var(--warning);
+}
+
+.section-counter .counter-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.section-counter .counter-divider {
+  color: var(--border);
+  margin: 0 6px;
+}
+
 /* Closing Toolbar */
 .closing-toolbar {
   display: flex;
@@ -2194,6 +2270,21 @@ body {
   
   .screen {
     padding: 24px;
+  }
+  
+  .closing-section {
+    padding: 20px;
+  }
+  
+  .closing-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .section-counter {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 }
 

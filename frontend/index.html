@@ -173,42 +173,66 @@
                     </div>
                 </div>
                 
-                <div class="task-counters">
-                    <div class="counter">
-                        <span class="counter-value" id="closingTotal">0</span>
-                        <span class="counter-label">Total</span>
+                <div class="closing-sections">
+                    <!-- Section 1: SOP Harian (Task Paten) -->
+                    <div class="closing-section">
+                        <div class="closing-section-header">
+                            <h3><i class="ti ti-clipboard-check"></i> SOP Harian (Task Paten)</h3>
+                            <div class="section-counter">
+                                <span class="counter-value" id="sopTotal">0</span>
+                                <span class="counter-label">Total</span>
+                                <span class="counter-divider">|</span>
+                                <span class="counter-value done" id="sopDone">0</span>
+                                <span class="counter-label">Selesai</span>
+                                <span class="counter-divider">|</span>
+                                <span class="counter-value pending" id="sopPending">0</span>
+                                <span class="counter-label">Belum</span>
+                            </div>
+                        </div>
+                        <div class="task-list" id="closing-sop-list">
+                            <p class="empty-state"><i class="ti ti-clipboard-check"></i><p>Belum ada SOP harian</p></p>
+                        </div>
                     </div>
-                    <div class="counter">
-                        <span class="counter-value" id="closingDone">0</span>
-                        <span class="counter-label">Selesai</span>
+                    
+                    <!-- Section 2: Task Tambahan & Carry Over -->
+                    <div class="closing-section">
+                        <div class="closing-section-header">
+                            <h3><i class="ti ti-plus"></i> Task Tambahan & Carry Over</h3>
+                            <div class="section-counter">
+                                <span class="counter-value" id="extraTotal">0</span>
+                                <span class="counter-label">Total</span>
+                                <span class="counter-divider">|</span>
+                                <span class="counter-value done" id="extraDone">0</span>
+                                <span class="counter-label">Selesai</span>
+                                <span class="counter-divider">|</span>
+                                <span class="counter-value pending" id="extraPending">0</span>
+                                <span class="counter-label">Belum</span>
+                            </div>
+                        </div>
+                        
+                        <div class="closing-toolbar">
+                            <div class="toolbar-left">
+                                <label class="checkbox-wrapper">
+                                    <input type="checkbox" id="selectAllClosing" onchange="toggleSelectAllClosing()">
+                                    <span class="checkmark-box"></span>
+                                    <span class="checkbox-label">Pilih Semua</span>
+                                </label>
+                                <span class="toolbar-info" id="closingSelectedCount">0 dipilih</span>
+                            </div>
+                            <div class="toolbar-right">
+                                <button class="btn btn-danger btn-sm" onclick="deleteSelectedClosingTasks()" id="btnDeleteSelected" disabled>
+                                    <i class="ti ti-trash"></i> Hapus Terpilih
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="uncheckAllClosingTasks()">
+                                    <i class="ti ti-refresh"></i> Reset Semua
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="task-list" id="closing-list">
+                            <p class="empty-state"><i class="ti ti-inbox"></i><p>Belum ada task tambahan</p></p>
+                        </div>
                     </div>
-                    <div class="counter">
-                        <span class="counter-value" id="closingPending">0</span>
-                        <span class="counter-label">Belum</span>
-                    </div>
-                </div>
-                
-                <div class="closing-toolbar">
-                    <div class="toolbar-left">
-                        <label class="checkbox-wrapper">
-                            <input type="checkbox" id="selectAllClosing" onchange="toggleSelectAllClosing()">
-                            <span class="checkmark-box"></span>
-                            <span class="checkbox-label">Pilih Semua</span>
-                        </label>
-                        <span class="toolbar-info" id="closingSelectedCount">0 dipilih</span>
-                    </div>
-                    <div class="toolbar-right">
-                        <button class="btn btn-danger btn-sm" onclick="deleteSelectedClosingTasks()" id="btnDeleteSelected" disabled>
-                            <i class="ti ti-trash"></i> Hapus Terpilih
-                        </button>
-                        <button class="btn btn-secondary btn-sm" onclick="uncheckAllClosingTasks()">
-                            <i class="ti ti-refresh"></i> Reset Closing
-                        </button>
-                    </div>
-                </div>
-
-                <div class="task-list" id="closing-list">
-                    <p class="empty-state">Memuat tasks...</p>
                 </div>
                 
                 <div class="closing-actions">
@@ -1120,19 +1144,19 @@
         }
         
         async function uncheckAllClosingTasks() {
-            const closingTasks = tasks.filter(t => t.category === 'Harian' && t.is_done);
-            if (closingTasks.length === 0) {
+            const doneTasks = tasks.filter(t => t.category === 'Harian' && t.is_done);
+            if (doneTasks.length === 0) {
                 showToast('Tidak ada task yang perlu di-reset', 'info');
                 return;
             }
             
-            if (!confirm(`Yakin ingin mengubah ${closingTasks.length} task menjadi belum selesai?`)) {
+            if (!confirm(`Yakin ingin mengubah ${doneTasks.length} task menjadi belum selesai?`)) {
                 return;
             }
             
             showToast('Mereset task...', 'info');
             
-            for (const task of closingTasks) {
+            for (const task of doneTasks) {
                 try {
                     await fetch(`${API_BASE_URL}/tasks/${task.id}/toggle`, { method: 'POST' });
                     task.is_done = false;
@@ -1171,18 +1195,29 @@
         
         // Render Closing
         function renderClosing() {
-            const container = document.getElementById('closing-list');
-            const closingTasks = tasks.filter(t => t.category === 'Harian');
+            const sopContainer = document.getElementById('closing-sop-list');
+            const extraContainer = document.getElementById('closing-list');
             
-            const total = closingTasks.length;
-            const done = closingTasks.filter(t => t.is_done).length;
-            const pending = total - done;
+            // SOP Harian = task wajib (paten)
+            const sopTasks = tasks.filter(t => t.category === 'Harian' && t.task_type === 'wajib');
+            // Task Tambahan = task insidental (baru, carry over, dll)
+            const extraTasks = tasks.filter(t => t.category === 'Harian' && t.task_type === 'insidental');
             
-            document.getElementById('closingTotal').textContent = total;
-            document.getElementById('closingDone').textContent = done;
-            document.getElementById('closingPending').textContent = pending;
+            // Update SOP counters
+            document.getElementById('sopTotal').textContent = sopTasks.length;
+            document.getElementById('sopDone').textContent = sopTasks.filter(t => t.is_done).length;
+            document.getElementById('sopPending').textContent = sopTasks.filter(t => !t.is_done).length;
             
-            container.innerHTML = renderList(closingTasks, false, true);
+            // Update Extra counters
+            document.getElementById('extraTotal').textContent = extraTasks.length;
+            document.getElementById('extraDone').textContent = extraTasks.filter(t => t.is_done).length;
+            document.getElementById('extraPending').textContent = extraTasks.filter(t => !t.is_done).length;
+            
+            sopContainer.innerHTML = renderList(sopTasks, false, false);
+            extraContainer.innerHTML = renderList(extraTasks, false, true);
+            
+            // Update selection count
+            updateClosingSelection();
         }
         
         // Render Harian
@@ -1994,14 +2029,24 @@ th, td { border: 1px solid #000; padding: 8px; }
         function generateWAReport() {
             const officerName = document.getElementById('officerName').value.trim();
             if (!officerName) {
-                showToast('Mohon isi nama Retail Assistant terlebih dahulu', 'error');
+                showToast('Mohon pilih nama Retail Assistant terlebih dahulu', 'error');
                 document.getElementById('officerName').focus();
                 return;
             }
             
-            const harianTasks = tasks.filter(t => t.category === 'Harian');
-            const doneTasks = harianTasks.filter(t => t.is_done);
-            const pendingTasks = harianTasks.filter(t => !t.is_done);
+            // SOP tasks
+            const sopTasks = tasks.filter(t => t.category === 'Harian' && t.task_type === 'wajib');
+            const sopDone = sopTasks.filter(t => t.is_done);
+            const sopPending = sopTasks.filter(t => !t.is_done);
+            
+            // Extra tasks
+            const extraTasks = tasks.filter(t => t.category === 'Harian' && t.task_type === 'insidental');
+            const extraDone = extraTasks.filter(t => t.is_done);
+            const extraPending = extraTasks.filter(t => !t.is_done);
+            
+            const totalTasks = sopTasks.length + extraTasks.length;
+            const totalDone = sopDone.length + extraDone.length;
+            const totalPending = sopPending.length + extraPending.length;
             
             const now = new Date();
             const dateStr = now.toLocaleDateString('id-ID', { 
@@ -2016,29 +2061,33 @@ th, td { border: 1px solid #000; padding: 8px; }
             report += `Retail Assistant: ${officerName}\n`;
             report += `Waktu: ${now.toLocaleTimeString('id-ID', { hour12: false })}\n\n`;
             
-            report += `*TASK SELESAI (${doneTasks.length}/${harianTasks.length}):*\n`;
-            if (doneTasks.length === 0) {
-                report += `- Belum ada task yang selesai\n`;
+            // SOP Section
+            report += `*📋 SOP HARIAN (${sopDone.length}/${sopTasks.length} selesai):*\n`;
+            if (sopTasks.length === 0) {
+                report += `- Tidak ada SOP harian\n`;
             } else {
-                doneTasks.forEach((t, i) => {
-                    report += `${i + 1}. ${t.title}\n`;
+                sopTasks.forEach((t, i) => {
+                    const status = t.is_done ? '✅' : '⬜';
+                    report += `${status} ${t.title}\n`;
                 });
             }
             
-            report += `\n*TASK BELUM SELESAI (${pendingTasks.length}/${harianTasks.length}):*\n`;
-            if (pendingTasks.length === 0) {
-                report += `- Semua task sudah selesai\n`;
+            // Extra Section
+            report += `\n*➕ TASK TAMBAHAN (${extraDone.length}/${extraTasks.length} selesai):*\n`;
+            if (extraTasks.length === 0) {
+                report += `- Tidak ada task tambahan\n`;
             } else {
-                pendingTasks.forEach((t, i) => {
-                    report += `${i + 1}. ${t.title}\n`;
+                extraTasks.forEach((t, i) => {
+                    const status = t.is_done ? '✅' : '⬜';
+                    report += `${status} ${t.title}\n`;
                 });
             }
             
-            report += `\n*SUMMARY:*\n`;
-            report += `Total Task: ${harianTasks.length}\n`;
-            report += `Selesai: ${doneTasks.length}\n`;
-            report += `Belum: ${pendingTasks.length}\n`;
-            report += `Progress: ${harianTasks.length > 0 ? Math.round((doneTasks.length / harianTasks.length) * 100) : 0}%\n\n`;
+            report += `\n*📊 SUMMARY:*\n`;
+            report += `Total Task: ${totalTasks}\n`;
+            report += `Selesai: ${totalDone}\n`;
+            report += `Belum: ${totalPending}\n`;
+            report += `Progress: ${totalTasks > 0 ? Math.round((totalDone / totalTasks) * 100) : 0}%\n\n`;
             
             report += `---\n`;
             report += `_Sent from Eiger Wonosari Task Manager_`;
